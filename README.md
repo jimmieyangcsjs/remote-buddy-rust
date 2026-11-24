@@ -6,7 +6,7 @@
 
 **把 Chromecast with Google TV 遥控器变成 Windows 的快捷键面板、应用启动器和无线麦克风。**
 
-专为 **Google G9N9N / Chromecast Remote** 优化 · Windows 10/11 x64 · 全部在本机运行
+专为 **Google G9N9N / Chromecast Remote** 优化 · Windows 10/11 x64 · 本地桌面应用
 
 [![Release](https://img.shields.io/github/v/release/jimmieyangcsjs/remote-buddy-rust?display_name=tag)](https://github.com/jimmieyangcsjs/remote-buddy-rust/releases)
 [![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
@@ -39,7 +39,7 @@
 | 按键能力 | 快捷键、文本输入、媒体控制、应用切换、连续重复 |
 | 语音链路 | 遥控器麦克风 → ATVV → VB-CABLE → 微信/搜狗输入法 |
 | 技术栈 | Rust、Tauri 2、React、TypeScript |
-| 数据边界 | 无账号、无遥测、无云端音频，音频只在本机流转 |
+| 数据边界 | Remote Buddy 无账号、无遥测、不上传音频；第三方输入法策略另行确认 |
 | 获取方式 | [GitHub Releases](https://github.com/jimmieyangcsjs/remote-buddy-rust/releases/latest) 免费下载 |
 
 ## 为什么做 Remote Buddy
@@ -57,7 +57,7 @@ Windows 可以配对手柄和遥控器，却很难把 Chromecast 遥控器的**�
 - 已经有一支 **G9N9N / Chromecast Remote**，希望把它用在 Windows 而不是电视上。
 - 想用一只手完成 ChatGPT、浏览器、VS Code、OBS、播放器等应用的快捷切换。
 - 希望按住遥控器语音键，直接在微信输入法或搜狗输入法里说话转文字。
-- 在意隐私，不希望按键、音频或转写文本经过云端遥控服务。
+- 在意隐私，不希望按键或音频经过 Remote Buddy 自己的云端服务。
 - 需要 Windows 10/11 长期后台运行、自动重连和托盘常驻。
 
 ## 核心亮点
@@ -102,7 +102,7 @@ Windows 可以配对手柄和遥控器，却很难把 Chromecast 遥控器的**�
 | 系统 | 管理员权限 | 可在设置中请求提权，改善切换高权限应用和恢复窗口的可靠性 |
 | 系统 | 中英双语 | 默认简体中文，可在设置中切换 English |
 | 诊断 | 链路可视化 | 蓝牙发现、按键采集、ATVV、VB-CABLE、WebView2 状态集中展示 |
-| 隐私 | 本地优先 | 无账号、无遥测、无云端音频、无转写文本上传 |
+| 隐私 | 本地优先 | Remote Buddy 无账号、无遥测、不上传音频；输入法行为由其提供方决定 |
 
 <p align="center">
   <img src="docs/images/mapping.png" width="49%" alt="Remote Buddy 按键映射页：虚拟遥控器与单击、双击、长按配置">
@@ -232,7 +232,7 @@ BthPort ETW / Raw Input → 解码 → 手势识别 → 映射 → SendInput / S
 - 日志：`%APPDATA%\RemoteBuddy\logs\rust-app.log`
 - 诊断包：`%APPDATA%\RemoteBuddy\diagnostics\`
 
-程序没有账号系统、遥测、广告或云端音频。诊断包中的设备名、蓝牙地址和日志可能包含本机信息，分享前应检查并脱敏。完整说明见 [隐私说明](PRIVACY.md)。
+Remote Buddy 没有账号系统、遥测、广告或音频上传功能。语音识别由你选择的输入法完成，该输入法可能按其自身隐私政策处理音频或文字；这部分不受 Remote Buddy 控制。诊断包中的设备名、蓝牙地址和日志可能包含本机信息，分享前应检查并脱敏。完整说明见 [隐私说明](PRIVACY.md)。
 
 ## 已实现的质量措施
 
@@ -299,7 +299,7 @@ target\release\bundle\nsis\Remote Buddy_0.2.0_x64-setup.exe
 | 软件自带语音识别吗？ | 不包含。识别由微信输入法、搜狗输入法或你配置的语音工具完成。 |
 | 第一次按键没有反应？ | 先到“诊断”页启用按键增强，再重新打开蓝牙或重启电脑。 |
 | Windows 11 能用吗？ | 可以尝试，项目共享 Windows 10/11 x64 构建；最终以诊断页和实体按键测试为准。 |
-| 会上传音频或转写文本吗？ | 不会。项目没有账号、遥测或云端音频，音频只在本机内存和 VB-CABLE 之间流转。 |
+| 会上传音频或转写文本吗？ | Remote Buddy 不会。音频只在本机内存和 VB-CABLE 之间流转；微信/搜狗等输入法是否使用云端识别，以其隐私政策为准。 |
 | 如何一键切换到 ChatGPT？ | 在“按键映射”中选择“切换应用”，从窗口列表选择 ChatGPT，或填写其 EXE 路径并保存。 |
 
 更完整的步骤和排错方法见 [用户手册](docs/USER_GUIDE.md) 与 [诊断说明](docs/DIAGNOSTICS.md)。

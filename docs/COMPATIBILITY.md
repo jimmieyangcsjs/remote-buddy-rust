@@ -61,7 +61,7 @@ Remote Buddy 当前以 **Chromecast with Google TV Remote（Google G9N9N）** �
 | Windows on ARM | 不支持 | 不提供 ARM64 构建 |
 | Microsoft Edge WebView2 Runtime | 必需 | 安装包会处理常见安装场景，独立 EXE 需系统已有运行库 |
 | VB-CABLE | 语音输入时需要 | 第三方软件，不随本项目分发 |
-| 微信输入法 / 搜狗输入法 | 推荐 | 负责语音转文字，麦克风需选择 `CABLE Output` |
+| 微信输入法 / 搜狗输入法 | 推荐 | 负责语音转文字，麦克风需选择 `CABLE Output`；其云端处理策略由输入法提供方决定 |
 | 管理员权限 | 可选 | 用于按键增强、切换高权限应用和部分窗口恢复场景 |
 
 ## 6. 购买前确认
