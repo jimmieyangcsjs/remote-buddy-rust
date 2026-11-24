@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Remote Buddy",
+  "version": "0.2.0",
+  "identifier": "dev.remotebuddy.windows",
+  "build": {
+    "beforeDevCommand": {
+      "script": "pnpm --dir ui dev",
+      "cwd": "../../"
+    },
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": {
+      "script": "pnpm --dir ui build",
+      "cwd": "../../"
+    },
+    "frontendDist": "../../ui/dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Remote Buddy",
+        "width": 1180,
+        "height": 760,
+        "minWidth": 760,
+        "minHeight": 560,
+        "center": true,
+        "decorations": false,
+        "backgroundColor": "#070b11",
+        "transparent": false,
+        "additionalBrowserArgs": "--disable-gpu --disable-gpu-compositing --disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --disable-background-networking --disable-component-update --disable-domain-reliability --disable-sync --no-first-run --no-default-browser-check --js-flags=--max-old-space-size=96",
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src ipc: http://ipc.localhost"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "icon": ["icons/icon.ico", "icons/32x32.png", "icons/128x128.png", "icons/icon.png"],
+    "publisher": "Remote Buddy Contributors",
+    "homepage": "https://github.com/jimmieyangcsjs/remote-buddy-rust",
+    "license": "GPL-3.0-only",
+    "licenseFile": "../../LICENSE",
+    "category": "Utility",
+    "shortDescription": "Rust/Tauri remote control bridge for Chromecast G9N9N",
+    "longDescription": "Remote Buddy connects a Google G9N9N remote over Bluetooth, routes ordinary buttons through BthPort ETW, and sends ATVV voice audio to a configured input device.",
+    "windows": {
+      "webviewInstallMode": {
+        "type": "embedBootstrapper",
+        "silent": true
+      },
+      "nsis": {
+        "installMode": "currentUser",
+        "displayLanguageSelector": false
+      }
+    }
+  }
+}

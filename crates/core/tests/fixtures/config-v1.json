@@ -1,0 +1,57 @@
+{
+  "Version": 1,
+  "Language": "system",
+  "LaunchAtStartup": false,
+  "MinimizeToTrayOnClose": true,
+  "HasCompletedOnboarding": true,
+  "InputTool": {
+    "Tool": "WeChatInput",
+    "TriggerMode": "HoldToTalk",
+    "Shortcut": "Ctrl+F5",
+    "PreferredAudioInputDevice": "CABLE Output"
+  },
+  "Devices": [
+    {
+      "IsG9N9N": true,
+      "IsT1": false,
+      "IsXiaomi": false,
+      "FormattedAddress": "11:22:33:44:55:66",
+      "ModelDisplayName": "Chromecast Voice Remote (G9N9N)",
+      "IsSmartToggleMode": true,
+      "IsHoldToTalkMode": false,
+      "Id": "112233445566",
+      "BluetoothAddress": 18838586676582,
+      "ContainerId": "37f310c9-5665-5283-acaa-87b21ce3347b",
+      "Name": "Chromecast Remote",
+      "ModelType": "GoogleG9N9N",
+      "BatteryLevel": -1,
+      "Gain": 3.621714,
+      "VoiceButtonMode": "SmartToggle",
+      "Mappings": [
+        {
+          "Button": "Up",
+          "ClickAction": "KeyboardShortcut",
+          "ClickShortcut": "Up",
+          "ClickMedia": "None",
+          "DoubleClickAction": "None",
+          "LongPressAction": "ContinuousRepeat"
+        },
+        {
+          "Button": "Power",
+          "ClickAction": "None",
+          "ClickMedia": "None",
+          "DoubleClickAction": "None",
+          "LongPressAction": "ContinuousRepeat"
+        }
+      ]
+    }
+  ],
+  "SelectedDeviceId": "112233445566",
+  "AppIntegrations": {
+    "wechat": false,
+    "chatgpt": true
+  },
+  "FutureField": {
+    "keep": true
+  }
+}

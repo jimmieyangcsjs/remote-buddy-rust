@@ -1,0 +1,34 @@
+[package]
+name = "remote-buddy-desktop"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lib]
+name = "remote_buddy_desktop"
+crate-type = ["rlib"]
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+async-trait.workspace = true
+chrono = { version = "0.4", features = ["clock"] }
+remote-buddy-core = { path = "../../crates/core" }
+remote-buddy-windows = { path = "../../crates/windows" }
+serde.workspace = true
+serde_json.workspace = true
+tauri = { version = "2", features = ["tray-icon", "image-png"] }
+tauri-plugin-autostart = "2"
+tauri-plugin-single-instance = "2"
+tokio.workspace = true
+tracing.workspace = true
+windows = { version = "0.61", features = [
+  "Win32_Foundation",
+  "Win32_UI_WindowsAndMessaging",
+] }
+zip = { version = "2", default-features = false, features = ["deflate"] }

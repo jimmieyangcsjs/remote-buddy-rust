@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680" role="img" aria-labelledby="title desc">
+  <title id="title">Remote Buddy 架构</title>
+  <desc id="desc">遥控器普通按键与语音音频分别经过 BthPort ETW 和 ATVV 进入 Rust 核心，再由 Windows 动作层执行。</desc>
+  <defs>
+    <linearGradient id="bg" x1="80" y1="30" x2="1120" y2="650" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#08111B"/>
+      <stop offset="1" stop-color="#0B1521"/>
+    </linearGradient>
+    <linearGradient id="core" x1="438" y1="130" x2="760" y2="568" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#17263A"/>
+      <stop offset="1" stop-color="#101B2B"/>
+    </linearGradient>
+    <linearGradient id="signal" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#6EA8FF"/>
+      <stop offset="1" stop-color="#3FD0C9"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#6EA8FF"/>
+    </marker>
+    <style>
+      .eyebrow { font: 600 12px 'Manrope','Microsoft YaHei',sans-serif; letter-spacing: 2.4px; fill: #7F92A6; }
+      .title { font: 700 26px 'Manrope','Microsoft YaHei',sans-serif; fill: #F2F7FD; }
+      .card-title { font: 700 16px 'Manrope','Microsoft YaHei',sans-serif; fill: #EDF4FC; }
+      .card-copy { font: 400 12.5px 'Manrope','Microsoft YaHei',sans-serif; fill: #93A6B8; }
+      .chip { font: 600 10.5px 'JetBrains Mono','Microsoft YaHei',monospace; fill: #9CC2FF; letter-spacing: .5px; }
+      .arrow-label { font: 500 10.5px 'JetBrains Mono','Microsoft YaHei',monospace; fill: #7EA4C8; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="680" rx="30" fill="url(#bg)"/>
+  <rect x="24" y="24" width="1152" height="632" rx="22" fill="none" stroke="#FFFFFF" stroke-opacity=".07"/>
+  <circle cx="604" cy="348" r="274" fill="#3E7BFF" opacity=".055"/>
+  <path d="M78 112H1122" stroke="#FFFFFF" stroke-opacity=".07"/>
+
+  <text x="72" y="68" class="eyebrow">REMOTE BUDDY / RUST + TAURI 2</text>
+  <text x="72" y="99" class="title">本地遥控器桥接架构</text>
+  <g transform="translate(960 54)">
+    <rect width="162" height="30" rx="15" fill="#13263A" stroke="#27547F"/>
+    <circle cx="18" cy="15" r="4" fill="#52D5C8"/>
+    <text x="31" y="19" class="chip">LOCAL ONLY</text>
+  </g>
+
+  <g>
+    <text x="72" y="151" class="eyebrow">01 / INPUT</text>
+
+    <rect x="72" y="178" width="264" height="160" rx="18" fill="#101C2A" stroke="#FFFFFF" stroke-opacity=".08"/>
+    <rect x="90" y="198" width="38" height="38" rx="11" fill="#172C44"/>
+    <path d="M104 207v20M99 212h10M109 212c0 5-5 7-10 10" stroke="#7EB1FF" stroke-width="2" stroke-linecap="round" fill="none"/>
+    <text x="142" y="212" class="card-title">普通按键</text>
+    <text x="142" y="231" class="card-copy">BthPort ETW 主路径</text>
+    <rect x="90" y="254" width="228" height="58" rx="10" fill="#0B1521" stroke="#22354B"/>
+    <text x="106" y="277" class="chip">ETW · EVENT 402</text>
+    <text x="106" y="297" class="card-copy">8-byte report + release</text>
+    <text x="90" y="327" class="card-copy">Raw Input 仅作为兼容回退</text>
+
+    <rect x="72" y="368" width="264" height="160" rx="18" fill="#101C2A" stroke="#FFFFFF" stroke-opacity=".08"/>
+    <rect x="90" y="388" width="38" height="38" rx="11" fill="#172C44"/>
+    <path d="M102 415v-9a7 7 0 0 1 14 0v9M99 415h20v8h-20z" stroke="#52D5C8" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <text x="142" y="402" class="card-title">语音键</text>
+    <text x="142" y="421" class="card-copy">Bluetooth ATVV</text>
+    <rect x="90" y="444" width="228" height="58" rx="10" fill="#0B1521" stroke="#22354B"/>
+    <text x="106" y="467" class="chip">16 kHz · IMA ADPCM</text>
+    <text x="106" y="487" class="card-copy">audio notifications</text>
+    <text x="90" y="517" class="card-copy">仅在本机内存中解码</text>
+  </g>
+
+  <g>
+    <text x="456" y="151" class="eyebrow">02 / CORE</text>
+    <rect x="420" y="168" width="360" height="420" rx="24" fill="url(#core)" stroke="#33577B"/>
+    <circle cx="600" cy="199" r="16" fill="none" stroke="url(#signal)" stroke-width="2"/>
+    <circle cx="600" cy="199" r="5" fill="#52D5C8" filter="url(#glow)"/>
+    <text x="600" y="235" text-anchor="middle" class="card-title">Remote Buddy Core</text>
+    <text x="600" y="255" text-anchor="middle" class="card-copy">Rust domain layer · testable without Win32</text>
+
+    <rect x="446" y="282" width="308" height="70" rx="14" fill="#0C1724" stroke="#29435E"/>
+    <text x="466" y="309" class="card-title">手势与映射</text>
+    <text x="466" y="330" class="card-copy">单击 / 双击 / 长按 / 连续重复</text>
+    <rect x="446" y="368" width="308" height="70" rx="14" fill="#0C1724" stroke="#29435E"/>
+    <text x="466" y="395" class="card-title">语音状态机</text>
+    <text x="466" y="416" class="card-copy">ATVV · 触发模式 · 电平 · 释放保护</text>
+    <rect x="446" y="454" width="308" height="70" rx="14" fill="#0C1724" stroke="#29435E"/>
+    <text x="466" y="481" class="card-title">配置与监督器</text>
+    <text x="466" y="502" class="card-copy">原子保存 · V1→V4 迁移 · 自动重连</text>
+    <text x="600" y="558" text-anchor="middle" class="chip">NO ACCOUNT · NO TELEMETRY · NO CLOUD AUDIO</text>
+  </g>
+
+  <g>
+    <text x="858" y="151" class="eyebrow">03 / WINDOWS</text>
+
+    <rect x="852" y="178" width="270" height="102" rx="18" fill="#101C2A" stroke="#FFFFFF" stroke-opacity=".08"/>
+    <rect x="872" y="198" width="34" height="34" rx="10" fill="#172C44"/>
+    <path d="M882 207h14M882 214h14M882 221h9" stroke="#7EB1FF" stroke-width="2" stroke-linecap="round"/>
+    <text x="920" y="211" class="card-title">SendInput</text>
+    <text x="920" y="232" class="card-copy">快捷键 · 文本 · 媒体键</text>
+    <text x="872" y="263" class="chip">KEY DOWN / UP BALANCED</text>
+
+    <rect x="852" y="300" width="270" height="102" rx="18" fill="#101C2A" stroke="#FFFFFF" stroke-opacity=".08"/>
+    <rect x="872" y="320" width="34" height="34" rx="10" fill="#172C44"/>
+    <path d="M879 330h20v14h-20zM883 326h12" stroke="#7EB1FF" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <text x="920" y="333" class="card-title">应用激活</text>
+    <text x="920" y="354" class="card-copy">已有窗口 · 最小化恢复 · 启动 EXE</text>
+    <text x="872" y="385" class="chip">MAGPIE / ELEVATED TARGET</text>
+
+    <rect x="852" y="422" width="270" height="102" rx="18" fill="#101C2A" stroke="#FFFFFF" stroke-opacity=".08"/>
+    <rect x="872" y="442" width="34" height="34" rx="10" fill="#172C44"/>
+    <path d="M879 460c5-8 17-8 22 0M884 465c3-4 9-4 12 0" stroke="#52D5C8" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <text x="920" y="455" class="card-title">CABLE Input</text>
+    <text x="920" y="476" class="card-copy">VB-CABLE → 输入法</text>
+    <text x="872" y="507" class="chip">CABLE OUTPUT · SPEECH TO TEXT</text>
+  </g>
+
+  <g fill="none" stroke="#4D84C8" stroke-width="2" marker-end="url(#arrow)">
+    <path d="M336 250 C380 250 382 292 420 298"/>
+    <path d="M336 442 C380 442 382 408 420 404"/>
+    <path d="M780 326 C816 326 816 228 852 228"/>
+    <path d="M780 390 C816 390 816 350 852 350"/>
+    <path d="M780 452 C816 452 816 472 852 472"/>
+  </g>
+  <g class="arrow-label">
+    <text x="350" y="278">RawFrame</text>
+    <text x="350" y="470">PCM + level</text>
+    <text x="794" y="214">actions</text>
+    <text x="796" y="352">focus</text>
+    <text x="792" y="500">audio</text>
+  </g>
+
+  <g transform="translate(72 590)">
+    <rect width="1056" height="40" rx="12" fill="#0C1724" stroke="#FFFFFF" stroke-opacity=".06"/>
+    <text x="18" y="25" class="card-copy">设计原则：输入链路、语音链路和系统动作独立隔离；任何一条链路失败都必须显示真实状态。</text>
+    <text x="1038" y="25" text-anchor="end" class="chip">GPL-3.0-ONLY</text>
+  </g>
+</svg>
