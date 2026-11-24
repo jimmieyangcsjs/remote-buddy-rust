@@ -1,10 +1,12 @@
 <div align="center">
 
-<img src="apps/desktop/icons/remote-buddy.svg" width="112" alt="Remote Buddy 图标" />
+<img src="apps/desktop/icons/remote-buddy.svg" width="104" alt="Remote Buddy 图标" />
 
 # Remote Buddy
 
-**把 Chromecast with Google TV 遥控器变成 Windows 的快捷键、应用启动器和无线麦克风。**
+**把 Chromecast with Google TV 遥控器变成 Windows 的快捷键面板、应用启动器和无线麦克风。**
+
+专为 **Google G9N9N / Chromecast Remote** 优化 · Windows 10/11 x64 · 全部在本机运行
 
 [![Release](https://img.shields.io/github/v/release/jimmieyangcsjs/remote-buddy-rust?display_name=tag)](https://github.com/jimmieyangcsjs/remote-buddy-rust/releases)
 [![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
@@ -12,7 +14,9 @@
 [![Rust](https://img.shields.io/badge/Rust-1.89%2B-B7410E.svg)](rust-toolchain.toml)
 [![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB.svg)](https://tauri.app/)
 
-[下载安装包](https://github.com/jimmieyangcsjs/remote-buddy-rust/releases/latest) ·
+[下载最新版](https://github.com/jimmieyangcsjs/remote-buddy-rust/releases/latest) ·
+[快速开始](#快速开始) ·
+[兼容性](#适用设备与兼容性) ·
 [用户手册](docs/USER_GUIDE.md) ·
 [功能说明](docs/FEATURES.md) ·
 [问题反馈](https://github.com/jimmieyangcsjs/remote-buddy-rust/issues)
@@ -21,29 +25,62 @@
 
 ---
 
-## AI 辅助开发声明
+> [!TIP]
+> **主要适配设备：Chromecast with Google TV Remote（Google G9N9N）**
+>
+> 本项目以拼多多「金利达数码科技大全」销售的 G9N9N 实机为主要测试与优化对象。同型号不同批次、蓝牙适配器和 Windows 驱动仍可能存在差异，购买前请阅读[设备与系统兼容性](docs/COMPATIBILITY.md)。
 
-本项目在需求分析、架构设计、代码实现、测试和文档整理过程中使用了 **DeepSeek** 进行 AI 辅助编程。所有提交由项目维护者审核，维护者对最终代码、发布包和运行结果负责。
+## 项目速览
 
-DeepSeek 是独立的第三方服务。本项目与其运营方不存在隶属、代理或官方背书关系。
+| 项目 | 信息 |
+| --- | --- |
+| 主要设备 | Google G9N9N / Chromecast with Google TV Remote |
+| 操作系统 | Windows 10 19041+ 或 Windows 11，仅 x64 |
+| 按键能力 | 快捷键、文本输入、媒体控制、应用切换、连续重复 |
+| 语音链路 | 遥控器麦克风 → ATVV → VB-CABLE → 微信/搜狗输入法 |
+| 技术栈 | Rust、Tauri 2、React、TypeScript |
+| 数据边界 | 无账号、无遥测、无云端音频，音频只在本机流转 |
+| 获取方式 | [GitHub Releases](https://github.com/jimmieyangcsjs/remote-buddy-rust/releases/latest) 免费下载 |
 
-## 参考项目声明
+## 为什么做 Remote Buddy
 
-本项目在产品目标、Chromecast 遥控器协议研究和使用流程上参考了
-[zfdang/remote-buddy-windows](https://github.com/zfdang/remote-buddy-windows)。
+Windows 可以配对手柄和遥控器，却很难把 Chromecast 遥控器的**完整按键**稳定交给普通桌面应用；语音键也不是微信输入法可以直接使用的麦克风。Remote Buddy 补上了这两段桥：
 
-Rust + Tauri 2 实现为本项目独立开发。上游项目的代码、文档、名称和相关权利归其原作者所有；本项目不宣称获得上游作者或 Google 的官方认可。上游项目采用 GPL-3.0 许可证，相关说明见 [开源与合规](docs/OPEN_SOURCE.md)。
+- **普通按键**：读取遥控器报告，识别手势，再转换成快捷键、文本、媒体命令或应用切换。
+- **语音按键**：接收 ATVV 蓝牙音频，经 VB-CABLE 送入微信输入法、搜狗输入法或自定义语音工具。
+- **状态可见**：虚拟遥控器、总览事件区和托盘菜单同步显示真实按键，不需要靠猜测排查。
 
-## 软件简介
+它不是只转发音量键的媒体工具，而是一套面向桌面的遥控器输入层。
 
-Remote Buddy 是一个完全在本机运行的 Windows 遥控器桥接工具。它面向已经与 Windows 配对的 **Chromecast with Google TV 遥控器（Google G9N9N）**，解决两个问题：
+## 适合谁
 
-1. Windows 默认不能把遥控器普通按键稳定地交给普通桌面应用；
-2. 遥控器语音键需要通过 ATVV 蓝牙音频链路接入输入法。
+- 已经有一支 **G9N9N / Chromecast Remote**，希望把它用在 Windows 而不是电视上。
+- 想用一只手完成 ChatGPT、浏览器、VS Code、OBS、播放器等应用的快捷切换。
+- 希望按住遥控器语音键，直接在微信输入法或搜狗输入法里说话转文字。
+- 在意隐私，不希望按键、音频或转写文本经过云端遥控服务。
+- 需要 Windows 10/11 长期后台运行、自动重连和托盘常驻。
 
-程序会把普通按键转换为快捷键、文本、媒体控制或应用切换动作，并把语音键接收到的音频写入 VB-CABLE，由微信输入法、搜狗输入法或其他工具完成语音转文字。
+## 核心亮点
 
-![Remote Buddy 总览页](docs/images/dashboard.png)
+- **为 G9N9N 实机优化**：按遥控器真实外观绘制 SVG，支持方向、确认、返回、主页、菜单、音量、媒体、电源和应用直达键。
+- **三种手势分开配置**：每个普通按键可独立设置单击、双击和长按；长按既可在 700 ms 触发一次，也可按住保持到松开。
+- **按键联动不是装饰**：实体按键会驱动虚拟遥控器高亮、事件区和托盘最近按键状态。
+- **应用切换更可靠**：支持从运行窗口选择或手动填写 EXE，并针对 Magpie、高权限窗口和最大化窗口做了处理。
+- **轻量桌面实现**：Rust + Tauri 2，当前安装包约 3.72 MiB，独立 EXE 约 5.82 MiB，仅提供 x64 构建。
+- **中文优先**：默认简体中文界面，可在设置中切换 English。
+
+## 典型用法
+
+| 场景 | 可以这样配置 |
+| --- | --- |
+| 一键工作流 | `YouTube` 键打开浏览器，`Netflix` 键启动 Netflix，其他按键切换到 ChatGPT、微信或 VS Code |
+| 桌面媒体控制 | 音量键调整系统音量，播放键控制播放/暂停，长按静音或执行自定义组合键 |
+| 语音输入 | 按住语音键说话，松开后由微信输入法或搜狗输入法完成转写 |
+| 演示与远控 | 用方向键翻页或移动焦点，用确认键执行，用返回键退出当前界面 |
+
+<p align="center">
+  <img src="docs/images/dashboard.png" width="94%" alt="Remote Buddy 总览页：连接状态、虚拟遥控器、最近按键和实时音频电平">
+</p>
 
 ## 功能一览
 
@@ -67,9 +104,33 @@ Remote Buddy 是一个完全在本机运行的 Windows 遥控器桥接工具。�
 | 诊断 | 链路可视化 | 蓝牙发现、按键采集、ATVV、VB-CABLE、WebView2 状态集中展示 |
 | 隐私 | 本地优先 | 无账号、无遥测、无云端音频、无转写文本上传 |
 
-![按键映射页](docs/images/mapping.png)
+<p align="center">
+  <img src="docs/images/mapping.png" width="49%" alt="Remote Buddy 按键映射页：虚拟遥控器与单击、双击、长按配置">
+  <img src="docs/images/voice.png" width="49%" alt="Remote Buddy 语音输入页：输入法快捷键、音频端点与实时电平">
+</p>
 
-![语音输入页](docs/images/voice.png)
+## 适用设备与兼容性
+
+| 设备或环境 | 状态 | 说明 |
+| --- | --- | --- |
+| Chromecast with Google TV Remote（Google G9N9N） | **主要支持** | 当前开发和实机优化的目标设备 |
+| 同型号其他批次 | 建议先看诊断页 | 蓝牙模块、固件和 Windows 驱动可能影响按键载荷 |
+| 其他 Chromecast / Google TV 遥控器 | **未承诺** | 可能被发现，但不保证完整按键和语音协议兼容 |
+| Windows 10 22H2 x64（19044） | 已完成构建与自动化验证 | 当前发布包的验证环境 |
+| Windows 11 x64 | 支持目标 | 与 Windows 10 共用 x64 构建；不同蓝牙适配器仍建议按诊断页确认 |
+| Windows 32 位、ARM64 | 不支持 | 本项目只发布 x64 构建 |
+
+设备识别与驱动排查时，可参考以下实机数据：
+
+| 字段 | 值 |
+| --- | --- |
+| Windows 设备名称 | `Chromecast Remote` |
+| 硬件型号 | Google G9N9N |
+| BLE VID / PID | `18D1` / `9450` |
+| 语音协议 | Bluetooth ATVV |
+| 推荐虚拟音频设备 | VB-CABLE `CABLE Input` / `CABLE Output` |
+
+完整测试边界、购买前确认项和反馈模板见 [设备与系统兼容性](docs/COMPATIBILITY.md)。
 
 ## 下载与安装
 
@@ -128,7 +189,7 @@ Windows 默认会省略 BthPort ETW 中的完整按键载荷。首次使用时�
 | 语音 | VB-CABLE；推荐微信输入法或搜狗输入法 |
 | 权限 | 首次启用按键增强需要 UAC；管理员运行可改善高权限应用切换 |
 
-本版本面向 Windows 10 19041+ 与 Windows 11 x64，使用相同的 x64 构建目标。当前发布包的自动化验证在 Windows 10 19044 x64 上完成；Windows 11 共享主要 API 和构建配置，但不同蓝牙适配器、驱动和系统策略仍可能影响 ETW 行为，建议在目标电脑上按“诊断”页逐项确认。
+当前发布包的自动化验证在 Windows 10 19044 x64 上完成；Windows 11 使用相同的 x64 构建目标，但不同蓝牙适配器、驱动和系统策略仍可能影响 ETW 行为。购买或部署前请查看 [设备与系统兼容性](docs/COMPATIBILITY.md)，并在目标电脑上按“诊断”页逐项确认。
 
 ## 工作原理
 
@@ -229,10 +290,36 @@ target\release\bundle\nsis\Remote Buddy_0.2.0_x64-setup.exe
 - 当前安装包未签名，SmartScreen 可能提示未知发布者。
 - 本项目不是 Google 官方产品，也不提供 Chromecast 固件或系统级蓝牙驱动修复。
 
+## 常见问题
+
+| 问题 | 简短回答 |
+| --- | --- |
+| 必须使用 G9N9N 吗？ | 当前只对 G9N9N 提供完整功能承诺；其他型号可能被识别，但不保证按键和语音兼容。 |
+| 必须安装 VB-CABLE 吗？ | 只有语音输入需要。只使用快捷键和应用切换时不需要虚拟音频设备。 |
+| 软件自带语音识别吗？ | 不包含。识别由微信输入法、搜狗输入法或你配置的语音工具完成。 |
+| 第一次按键没有反应？ | 先到“诊断”页启用按键增强，再重新打开蓝牙或重启电脑。 |
+| Windows 11 能用吗？ | 可以尝试，项目共享 Windows 10/11 x64 构建；最终以诊断页和实体按键测试为准。 |
+| 会上传音频或转写文本吗？ | 不会。项目没有账号、遥测或云端音频，音频只在本机内存和 VB-CABLE 之间流转。 |
+| 如何一键切换到 ChatGPT？ | 在“按键映射”中选择“切换应用”，从窗口列表选择 ChatGPT，或填写其 EXE 路径并保存。 |
+
+更完整的步骤和排错方法见 [用户手册](docs/USER_GUIDE.md) 与 [诊断说明](docs/DIAGNOSTICS.md)。
+
+## 反馈兼容性问题
+
+提交 Issue 时请尽量附上：
+
+1. Remote Buddy 版本、Windows 版本与系统架构；
+2. 遥控器在 Windows 蓝牙设置中的名称，以及诊断页显示的型号；
+3. 蓝牙适配器型号或电脑型号；
+4. 哪些按键正常、哪些按键无反应；
+5. “诊断”页中按键载荷、ATVV、VB-CABLE 的状态；
+6. 已脱敏的诊断包。请勿公开完整蓝牙地址、用户名或本机路径。
+
 ## 相关文档
 
 - [功能说明](docs/FEATURES.md)
 - [用户手册](docs/USER_GUIDE.md)
+- [设备与系统兼容性](docs/COMPATIBILITY.md)
 - [开源与合规](docs/OPEN_SOURCE.md)
 - [隐私说明](PRIVACY.md)
 - [安全策略](SECURITY.md)
@@ -241,6 +328,12 @@ target\release\bundle\nsis\Remote Buddy_0.2.0_x64-setup.exe
 - [协议记录](docs/PROTOCOL.md)
 - [开发与验证](docs/DEVELOPMENT.md)
 - [诊断说明](docs/DIAGNOSTICS.md)
+
+## AI 辅助开发与参考项目
+
+本项目在需求分析、架构设计、代码实现、测试和文档整理过程中使用了 **DeepSeek** 进行 AI 辅助编程。所有提交由项目维护者审核，维护者对最终代码、发布包和运行结果负责。DeepSeek 是独立的第三方服务，本项目与其运营方不存在隶属、代理或官方背书关系。
+
+本项目在产品目标、Chromecast 遥控器协议研究和使用流程上参考了 [zfdang/remote-buddy-windows](https://github.com/zfdang/remote-buddy-windows)。Rust + Tauri 2 实现为本项目独立开发。上游项目的代码、文档、名称和相关权利归其原作者所有；本项目不宣称获得上游作者、Google、拼多多或设备销售店铺的官方认可。上游项目采用 GPL-3.0 许可证，相关说明见 [开源与合规](docs/OPEN_SOURCE.md)。
 
 ## 致谢
 
