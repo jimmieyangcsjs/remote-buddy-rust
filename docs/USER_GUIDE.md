@@ -9,7 +9,7 @@
 从 [GitHub Releases](https://github.com/jimmieyangcsjs/remote-buddy-rust/releases/latest) 下载：
 
 ```text
-Remote Buddy_0.2.1_x64-setup.exe
+Remote-Buddy_0.2.1_x64-setup.exe
 ```
 
 双击安装。安装程序采用计算机范围安装，默认路径为 `C:\Program Files\Remote Buddy`，需要同意 UAC 管理员权限。若检测到旧版按用户安装，会先调用旧卸载程序清理副本，再安装到新目录。安装包内嵌 WebView2 静默引导程序；若系统没有 WebView2，安装过程中可能需要联网下载。

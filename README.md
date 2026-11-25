@@ -136,7 +136,7 @@ Windows 可以配对手柄和遥控器，却很难把 Chromecast 遥控器的**�
 
 前往 [Releases](https://github.com/jimmieyangcsjs/remote-buddy-rust/releases/latest) 下载最新版本。每个版本同时提供：
 
-- `Remote Buddy_0.2.1_x64-setup.exe`：推荐使用的 NSIS 安装包，默认安装到 `C:\Program Files\Remote Buddy`，安装时需要管理员权限；检测到旧版按用户安装时会先清理旧副本。
+- `Remote-Buddy_0.2.1_x64-setup.exe`：推荐使用的 NSIS 安装包，默认安装到 `C:\Program Files\Remote Buddy`，安装时需要管理员权限；检测到旧版按用户安装时会先清理旧副本。
 - `remote-buddy-desktop.exe`：独立运行版，适合已经安装 WebView2 的电脑。
 - `SHA256SUMS.txt`：发布文件校验值。
 

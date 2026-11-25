@@ -32,7 +32,7 @@
 推荐下载并运行：
 
 ```text
-Remote Buddy_0.2.1_x64-setup.exe
+Remote-Buddy_0.2.1_x64-setup.exe
 ```
 
 独立版：
@@ -46,7 +46,7 @@ remote-buddy-desktop.exe
 ## 从旧版本升级
 
 1. 关闭正在运行的 Remote Buddy；
-2. 运行 `Remote Buddy_0.2.1_x64-setup.exe` 并同意 UAC；
+2. 运行 `Remote-Buddy_0.2.1_x64-setup.exe` 并同意 UAC；
 3. 安装器会清理旧版按用户安装；
 4. 启动新版，在“设备”页连接遥控器；
 5. Intel 蓝牙 Windows 11 用户如遇到蓝牙鼠标异常，先在“诊断”页点击“恢复蓝牙默认设置”，重启电脑确认鼠标稳定后，再按需重新启用按键增强。
@@ -66,7 +66,7 @@ remote-buddy-desktop.exe
 
 ## 发布资产
 
-- `Remote Buddy_0.2.1_x64-setup.exe`：x64 NSIS 安装包，推荐使用。
+- `Remote-Buddy_0.2.1_x64-setup.exe`：x64 NSIS 安装包，推荐使用。
 - `remote-buddy-desktop.exe`：独立运行版。
 - `SHA256SUMS.txt`：发布文件 SHA-256 校验值。
 
@@ -75,7 +75,7 @@ remote-buddy-desktop.exe
 下载 `SHA256SUMS.txt` 后，在 PowerShell 中执行：
 
 ```powershell
-Get-FileHash '.\Remote Buddy_0.2.1_x64-setup.exe' -Algorithm SHA256
+Get-FileHash '.\Remote-Buddy_0.2.1_x64-setup.exe' -Algorithm SHA256
 ```
 
 将结果与 `SHA256SUMS.txt` 比较。
