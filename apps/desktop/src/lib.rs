@@ -6,12 +6,12 @@ mod state;
 mod tray;
 
 use remote_buddy_core::config::{MappingConfig, default_config_path, load_config};
+use serde::Serialize;
 use state::{AppSnapshot, AppState, SettingsUpdate, VoiceSettingsUpdate};
 use std::sync::OnceLock;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 use tauri::{AppHandle, Emitter, Manager, State};
-use tauri_plugin_autostart::ManagerExt;
 use windows::Win32::Foundation::RECT;
 use windows::Win32::UI::WindowsAndMessaging::{
     GetClientRect, IsZoomed, SW_MAXIMIZE, SW_RESTORE, ShowWindow,
@@ -97,30 +97,57 @@ async fn restore_default_mappings(
 #[tauri::command]
 async fn save_settings(
     update: SettingsUpdate,
-    app: AppHandle,
     state: State<'_, AppState>,
-) -> Result<AppSnapshot, String> {
+) -> Result<SaveSettingsResult, String> {
     let launch_at_startup = update.launch_at_startup;
+    let run_as_admin = update.run_as_admin;
+    let silent_start = update.silent_start;
     let snapshot = state.save_settings(update).await?;
-    if let Err(error) = sync_autostart(&app, launch_at_startup) {
-        state
-            .logger
-            .warn(format!("设置已保存，但开机自启动更新失败：{error}"));
-    }
-    Ok(snapshot)
+    let warning = sync_autostart(launch_at_startup, run_as_admin, silent_start)
+        .err()
+        .map(|error| {
+            state
+                .logger
+                .warn(format!("设置已保存，但开机自启动更新失败：{error}"));
+            format!("设置已保存，但开机自启动更新失败：{error}")
+        });
+    Ok(SaveSettingsResult { snapshot, warning })
 }
 
-fn sync_autostart(app: &AppHandle, enabled: bool) -> Result<(), String> {
-    let manager = app.autolaunch();
-    if manager.is_enabled().unwrap_or(!enabled) == enabled {
-        return Ok(());
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SaveSettingsResult {
+    snapshot: AppSnapshot,
+    warning: Option<String>,
+}
+
+fn sync_autostart(enabled: bool, run_as_admin: bool, silent: bool) -> Result<(), String> {
+    let executable =
+        std::env::current_exe().map_err(|error| format!("无法定位当前程序：{error}"))?;
+    remote_buddy_windows::autostart::configure(&executable, enabled, run_as_admin, silent)
+}
+
+fn startup_is_silent() -> bool {
+    startup_is_silent_from(std::env::args(), || {
+        load_config(&default_config_path())
+            .map(|config| config.silent_start)
+            .unwrap_or(false)
+    })
+}
+
+fn startup_is_silent_from(
+    arguments: impl Iterator<Item = String>,
+    silent_start: impl FnOnce() -> bool,
+) -> bool {
+    let mut autostart = false;
+    for argument in arguments {
+        match argument.as_str() {
+            "--silent" => return true,
+            "--autostart" => autostart = true,
+            _ => {}
+        }
     }
-    if enabled {
-        manager.enable()
-    } else {
-        manager.disable()
-    }
-    .map_err(|error| error.to_string())
+    autostart && silent_start()
 }
 
 #[tauri::command]
@@ -268,11 +295,6 @@ fn shutdown_system_resources(app: &AppHandle) {
 
 pub fn run() {
     let app = tauri::Builder::default()
-        .plugin(
-            tauri_plugin_autostart::Builder::new()
-                .arg("--autostart")
-                .build(),
-        )
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             show_main_window(app.clone());
         }))
@@ -285,6 +307,13 @@ pub fn run() {
             }
             app.manage(state);
             tray::build(app)?;
+            if !startup_is_silent()
+                && let Some(window) = app.get_webview_window("main")
+            {
+                let _ = window.show();
+                let _ = window.unminimize();
+                schedule_webview_layout_repair(window);
+            }
             Ok(())
         })
         .on_window_event(|window, event| match event {
@@ -335,4 +364,33 @@ pub fn run() {
             shutdown_system_resources(app);
         }
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::startup_is_silent_from;
+
+    #[test]
+    fn explicit_silent_argument_skips_window() {
+        let arguments = vec![
+            "remote-buddy-desktop.exe".to_string(),
+            "--silent".to_string(),
+        ];
+        assert!(startup_is_silent_from(arguments.into_iter(), || false));
+    }
+
+    #[test]
+    fn autostart_uses_saved_silent_preference() {
+        let arguments = vec![
+            "remote-buddy-desktop.exe".to_string(),
+            "--autostart".to_string(),
+        ];
+        assert!(startup_is_silent_from(arguments.into_iter(), || true));
+    }
+
+    #[test]
+    fn normal_launch_shows_window_even_when_silent_is_saved() {
+        let arguments = vec!["remote-buddy-desktop.exe".to_string()];
+        assert!(!startup_is_silent_from(arguments.into_iter(), || true));
+    }
 }

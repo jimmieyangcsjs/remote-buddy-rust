@@ -8,26 +8,39 @@
 - pnpm: 11.25.0
 - OS: Microsoft Windows NT 10.0.19044.0
 - WebView2: 157.0.4341.60
-- Generated: 2026-11-25 09:47:08 +08:00
+- Generated: 2026-11-25 10:54:00 +08:00
 
 ## Automated checks
 
 | Check | Result | Seconds | Detail |
 | --- | --- | ---: | --- |
-| cargo fmt | PASS | 0.9 |  |
-| cargo test | PASS | 5 |  |
-| cargo clippy | PASS | 1.9 |  |
-| UI tests | PASS | 3.7 |  |
-| UI build | PASS | 6.3 |  |
+| cargo fmt | PASS | 0.8 |  |
+| cargo test | PASS | 8 |  |
+| cargo clippy | PASS | 5.2 |  |
+| UI tests | PASS | 1.6 | 23 tests |
+| UI build | PASS | 2.9 |  |
 
 ## Release artifacts
 
 | Artifact | Path | MiB | SHA-256 | Signature |
 | --- | --- | ---: | --- | --- |
-| Application EXE | `target\release\remote-buddy-desktop.exe` | 5.82 | 20568BE9C0C673FA144E3CBFEDA6CC444931FD93C158D470BF2D08217ADBB40D | NotSigned |
-| NSIS installer | `target\release\bundle\nsis\Remote Buddy_0.2.1_x64-setup.exe` | 3.72 | EF7B7D47845FE6BC68728E79229731DBABC17EFFDF24025018CCF57592B05AC4 | NotSigned |
+| Application EXE | `target\release\remote-buddy-desktop.exe` | 5.81 | 972478FCE92976B369C4210F25B6985B848085A10D008F41026E047AA5E9961F | NotSigned |
+| NSIS installer | `target\release\bundle\nsis\Remote Buddy_0.3.0_x64-setup.exe` | 3.72 | 25DD27CCE2BE406EE561F456A4EAAAFC8EAFDC8766B2F2998A17F2BC6C044880 | NotSigned |
 
 Artifacts are produced by `build.ps1`; validation does not rebuild them.
+
+## Startup validation
+
+| Check | Result | Detail |
+| --- | --- | --- |
+| Administrator task creation | PASS | `schtasks /Create /XML` returned success |
+| Task principal | PASS | `HighestAvailable`, interactive current-user logon |
+| Battery policy | PASS | Start and continue while on battery are enabled |
+| Task action | PASS | Installed EXE with `--autostart --silent` |
+| Silent startup | PASS | Manual task run starts the process without a visible `Remote Buddy` main window |
+| Normal startup | PASS | Main window title is `Remote Buddy` |
+| Current-user fallback | PASS | HKCU Run value points to the installed EXE with `--autostart --silent` |
+| Disable cleanup | PASS | Administrator task and HKCU Run value are both removed |
 
 ## Hardware acceptance
 
@@ -43,7 +56,7 @@ Hardware checks are recorded separately after running on a paired G9N9N.
 - [ ] No duplicate Raw Input + ETW action
 - [ ] SmartToggle short press and HoldToTalk long press
 - [ ] Audio reaches CABLE Input and live gain changes are audible
-- [ ] Autostart launches the application after sign-in
+- [ ] Autostart launches after a real sign-out/sign-in on the target account
 - [ ] Idle for 10+ minutes without periodic GATT probing or forced reconnects
 - [ ] Intel Windows 11: Bluetooth mouse remains stable after reboot
 - [ ] Bluetooth radio off/on and sleep/resume recovery

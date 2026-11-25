@@ -9,6 +9,7 @@ import type {
   PageId,
   RawMapping,
   RunningApplication,
+  SettingsSaveResult,
   SettingsView,
   VoiceLevelEvent,
   VoiceStateEvent,
@@ -51,7 +52,7 @@ export function restoreDefaultMappings(deviceId: string) {
 }
 
 export function saveSettings(update: SettingsView) {
-  return invoke<AppSnapshot>("save_settings", { update });
+  return invoke<SettingsSaveResult>("save_settings", { update });
 }
 
 export function saveVoiceSettings(

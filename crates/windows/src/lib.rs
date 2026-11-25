@@ -1,5 +1,6 @@
 pub mod apps;
 pub mod audio;
+pub mod autostart;
 pub mod ble;
 pub mod capture_profile;
 pub mod elevation;

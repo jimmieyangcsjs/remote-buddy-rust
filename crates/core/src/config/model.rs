@@ -10,6 +10,8 @@ pub struct AppConfig {
     pub schema_version: u32,
     pub language: String,
     pub launch_at_startup: bool,
+    #[serde(default)]
+    pub silent_start: bool,
     pub minimize_to_tray: bool,
     #[serde(default = "default_run_as_admin")]
     pub run_as_admin: bool,
@@ -28,6 +30,7 @@ impl Default for AppConfig {
             schema_version: CURRENT_SCHEMA_VERSION,
             language: "zh-CN".to_string(),
             launch_at_startup: false,
+            silent_start: false,
             minimize_to_tray: true,
             run_as_admin: true,
             has_completed_onboarding: false,

@@ -52,9 +52,14 @@ export function SettingsPage() {
     if (!draft) return;
     setSaving(true);
     void saveSettings(draft)
-      .then((snapshot) => {
-        hydrate(snapshot);
-        showToast(t("设置已保存。", "Settings saved."));
+      .then((result) => {
+        hydrate(result.snapshot);
+        showToast(
+          result.warning
+            ? result.warning
+            : t("设置已保存。", "Settings saved."),
+          result.warning ? "error" : "success",
+        );
       })
       .catch((error: unknown) => setBackendError(String(error)))
       .finally(() => setSaving(false));
@@ -126,8 +131,8 @@ export function SettingsPage() {
               <p className="toggle-title">{t("开机自动启动", "Launch at sign-in")}</p>
               <p className="toggle-sub">
                 {t(
-                  "登录后启动并保留托盘与后台连接。",
-                  "Start after sign-in and keep the tray and background connection available.",
+                  "登录后自动启动。与“管理员权限启动”同时开启时，会创建一个最高权限的计划任务。",
+                  "Start automatically after sign-in. With administrator startup enabled, Remote Buddy creates a highest-privilege scheduled task.",
                 )}
               </p>
             </div>
@@ -135,6 +140,22 @@ export function SettingsPage() {
               checked={draft?.launchAtStartup ?? false}
               onChange={(value) => update("launchAtStartup", value)}
               label={t("开机自动启动", "Launch at sign-in")}
+            />
+          </div>
+          <div className="toggle-row">
+            <div className="toggle-copy">
+              <p className="toggle-title">{t("静默启动", "Start silently")}</p>
+              <p className="toggle-sub">
+                {t(
+                  "开机启动时直接驻留系统托盘，不显示主窗口；从桌面手动打开时仍正常显示界面。",
+                  "At sign-in, start in the system tray without showing the main window. Manual launches still show the interface.",
+                )}
+              </p>
+            </div>
+            <Toggle
+              checked={draft?.silentStart ?? false}
+              onChange={(value) => update("silentStart", value)}
+              label={t("静默启动", "Start silently")}
             />
           </div>
           <div className="toggle-row">
@@ -184,21 +205,31 @@ export function SettingsPage() {
           <div className="toggle-row">
             <div className="toggle-copy">
               <p className="toggle-title">
-                {t("启动时请求管理员权限", "Request elevation at startup")}
+                {t("管理员权限启动", "Start with administrator access")}
               </p>
               <p className="toggle-sub">
                 {t(
-                  "保存后下次启动生效；Windows 会显示 UAC 确认。",
-                  "Takes effect on the next launch. Windows will show a UAC prompt.",
+                  "手动启动时请求 UAC；开机启动则通过计划任务直接以最高权限运行，不会反复弹出 UAC。",
+                  "Manual launches request UAC. Sign-in startup uses a scheduled task with highest privileges, so it does not prompt on every logon.",
                 )}
               </p>
             </div>
             <Toggle
               checked={draft?.runAsAdmin ?? true}
               onChange={(value) => update("runAsAdmin", value)}
-              label={t("启动时请求管理员权限", "Request elevation at startup")}
+              label={t("管理员权限启动", "Start with administrator access")}
             />
           </div>
+          {draft?.launchAtStartup &&
+          draft.runAsAdmin &&
+          !stored?.runningAsAdmin ? (
+            <div className="startup-warning" role="status">
+              {t(
+                "当前不是管理员权限，暂时无法创建管理员开机启动任务。请先点击下方按钮重启，然后再次保存设置。",
+                "Remote Buddy is not elevated, so the administrator startup task cannot be created yet. Restart with the button below, then save again.",
+              )}
+            </div>
+          ) : null}
           <div className="field" style={{ marginTop: 14 }}>
             <Button
               variant={stored?.runningAsAdmin ? "ghost" : "signal"}

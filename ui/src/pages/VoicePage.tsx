@@ -64,13 +64,16 @@ export function VoicePage() {
       audioOutput: output,
       audioInput: input,
     })
-      .then((snapshot) => {
-        hydrate(snapshot);
+      .then((result) => {
+        hydrate(result.snapshot);
         showToast(
-          t(
-            "音频端点已保存，将在下一次语音会话生效。",
-            "Audio endpoints saved for the next voice session.",
-          ),
+          result.warning
+            ? result.warning
+            : t(
+                "音频端点已保存，将在下一次语音会话生效。",
+                "Audio endpoints saved for the next voice session.",
+              ),
+          result.warning ? "error" : "success",
         );
       })
       .catch((error: unknown) => setBackendError(String(error)))

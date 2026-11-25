@@ -54,10 +54,16 @@ pub fn elevation_disabled_by_argument() -> bool {
 
 pub fn relaunch_self_elevated() -> Result<(), ElevationError> {
     let executable = std::env::current_exe()?;
-    let parameters = format!(
+    let mut parameters = format!(
         "{ELEVATED_ARGUMENT} {WAIT_FOR_PID_ARGUMENT} {}",
         std::process::id()
     );
+    for argument in std::env::args().skip(1) {
+        if matches!(argument.as_str(), "--autostart" | "--silent") {
+            parameters.push(' ');
+            parameters.push_str(&argument);
+        }
+    }
     let operation = HSTRING::from("runas");
     let file = HSTRING::from(executable.as_os_str());
     let parameters = HSTRING::from(parameters);

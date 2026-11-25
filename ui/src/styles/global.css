@@ -1729,6 +1729,17 @@ select:focus-visible {
   line-height: 1.5;
 }
 
+.startup-warning {
+  margin: 0 0 12px;
+  padding: 11px 13px;
+  border: 1px solid rgba(232, 174, 78, 0.34);
+  border-radius: 11px;
+  background: rgba(232, 174, 78, 0.08);
+  color: #dca84f;
+  font-size: 10.5px;
+  line-height: 1.6;
+}
+
 .switch {
   position: relative;
   width: 38px;

@@ -63,6 +63,7 @@ export interface ConnectionSnapshot {
 export interface SettingsView {
   language: string;
   launchAtStartup: boolean;
+  silentStart: boolean;
   minimizeToTray: boolean;
   runAsAdmin: boolean;
   runningAsAdmin: boolean;
@@ -167,4 +168,9 @@ export interface AppSnapshot {
   discovery: DeviceDiscoveryView;
   settings: SettingsView;
   logs: LogEntry[];
+}
+
+export interface SettingsSaveResult {
+  snapshot: AppSnapshot;
+  warning: string | null;
 }

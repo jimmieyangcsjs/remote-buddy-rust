@@ -23,7 +23,6 @@ remote-buddy-windows = { path = "../../crates/windows" }
 serde.workspace = true
 serde_json.workspace = true
 tauri = { version = "2", features = ["tray-icon", "image-png"] }
-tauri-plugin-autostart = "2"
 tauri-plugin-single-instance = "2"
 tokio.workspace = true
 tracing.workspace = true

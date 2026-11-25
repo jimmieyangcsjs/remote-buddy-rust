@@ -55,6 +55,7 @@ pub struct MappingView {
 pub struct SettingsView {
     pub language: String,
     pub launch_at_startup: bool,
+    pub silent_start: bool,
     pub minimize_to_tray: bool,
     pub run_as_admin: bool,
     pub running_as_admin: bool,
@@ -133,6 +134,7 @@ pub struct AppSnapshot {
 pub struct SettingsUpdate {
     pub language: String,
     pub launch_at_startup: bool,
+    pub silent_start: bool,
     pub minimize_to_tray: bool,
     pub run_as_admin: bool,
     pub input_tool: String,
@@ -357,6 +359,7 @@ impl AppState {
             settings: SettingsView {
                 language: config.language.clone(),
                 launch_at_startup: config.launch_at_startup,
+                silent_start: config.silent_start,
                 minimize_to_tray: config.minimize_to_tray,
                 run_as_admin: config.run_as_admin,
                 running_as_admin: remote_buddy_windows::elevation::is_elevated(),
@@ -594,6 +597,7 @@ impl AppState {
             let mut next = config.clone();
             next.language = update.language;
             next.launch_at_startup = update.launch_at_startup;
+            next.silent_start = update.silent_start;
             next.minimize_to_tray = minimize_to_tray;
             next.run_as_admin = update.run_as_admin;
             next.input_tool.tool = update.input_tool;

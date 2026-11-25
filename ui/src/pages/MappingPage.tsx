@@ -183,13 +183,16 @@ export function MappingPage() {
       if (!voiceDraft) return;
       setSaving(true);
       void saveSettings(voiceDraft)
-        .then((snapshot) => {
-          hydrate(snapshot);
+        .then((result) => {
+          hydrate(result.snapshot);
           showToast(
-            t(
-              "语音键设置已保存，并会立即用于下一次触发。",
-              "Voice key settings saved and will apply to the next trigger.",
-            ),
+            result.warning
+              ? result.warning
+              : t(
+                  "语音键设置已保存，并会立即用于下一次触发。",
+                  "Voice key settings saved and will apply to the next trigger.",
+                ),
+            result.warning ? "error" : "success",
           );
         })
         .catch((error: unknown) => setBackendError(String(error)))

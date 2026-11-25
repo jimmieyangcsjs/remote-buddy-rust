@@ -66,7 +66,8 @@ Windows 可以配对手柄和遥控器，却很难把 Chromecast 遥控器的**�
 - **三种手势分开配置**：每个普通按键可独立设置单击、双击和长按；长按既可在 700 ms 触发一次，也可按住保持到松开。
 - **按键联动不是装饰**：实体按键会驱动虚拟遥控器高亮、事件区和托盘最近按键状态。
 - **应用切换更可靠**：支持从运行窗口选择或手动填写 EXE，并针对 Magpie、高权限窗口和最大化窗口做了处理。
-- **轻量桌面实现**：Rust + Tauri 2，当前安装包约 3.72 MiB，独立 EXE 约 5.82 MiB，仅提供 x64 构建。
+- **登录即用**：可创建最高权限计划任务，登录后自动以管理员权限启动，并可选静默驻留托盘。
+- **轻量桌面实现**：Rust + Tauri 2，当前安装包约 3.72 MiB，独立 EXE 约 5.81 MiB，仅提供 x64 构建。
 - **中文优先**：默认简体中文界面，可在设置中切换 English。
 
 ## 典型用法
@@ -100,6 +101,7 @@ Windows 可以配对手柄和遥控器，却很难把 Chromecast 遥控器的**�
 | 语音 | 多种触发模式 | 按住说话、点击切换、智能免提三类输入法触发方式 |
 | 系统 | 托盘常驻 | 关闭到托盘、后台重连、最近按键状态和快捷操作 |
 | 系统 | 管理员权限 | 可在设置中请求提权，改善切换高权限应用和恢复窗口的可靠性 |
+| 系统 | 管理员开机启动 | 登录后通过计划任务以最高权限启动；可静默驻留托盘 |
 | 系统 | 中英双语 | 默认简体中文，可在设置中切换 English |
 | 诊断 | 链路可视化 | 蓝牙发现、按键采集、ATVV、VB-CABLE、WebView2 状态集中展示 |
 | 隐私 | 本地优先 | Remote Buddy 无账号、无遥测、不上传音频；输入法行为由其提供方决定 |
@@ -136,7 +138,7 @@ Windows 可以配对手柄和遥控器，却很难把 Chromecast 遥控器的**�
 
 前往 [Releases](https://github.com/jimmieyangcsjs/remote-buddy-rust/releases/latest) 下载最新版本。每个版本同时提供：
 
-- `Remote-Buddy_0.2.1_x64-setup.exe`：推荐使用的 NSIS 安装包，默认安装到 `C:\Program Files\Remote Buddy`，安装时需要管理员权限；检测到旧版按用户安装时会先清理旧副本。
+- `Remote-Buddy_0.3.0_x64-setup.exe`：推荐使用的 NSIS 安装包，默认安装到 `C:\Program Files\Remote Buddy`，安装时需要管理员权限；检测到旧版按用户安装时会先清理旧副本。
 - `remote-buddy-desktop.exe`：独立运行版，适合已经安装 WebView2 的电脑。
 - `SHA256SUMS.txt`：发布文件校验值。
 
@@ -222,6 +224,7 @@ BthPort ETW / Raw Input → 解码 → 手势识别 → 映射 → SendInput / S
 | 移动窗口 | 拖动顶部标题栏 |
 | 最大化 / 还原 | 点击右上角按钮，或双击标题栏 |
 | 关闭到托盘 | 设置中开启后，点击关闭按钮只隐藏窗口 |
+| 开机静默启动 | 在设置中同时开启“开机自动启动”和“静默启动” |
 | 显示主窗口 | 单击托盘图标，或右键托盘菜单选择“显示主窗口” |
 | 录制快捷键 | 点击快捷键输入框后直接按键，`Esc` 取消 |
 | 重新连接 | 总览页“重新连接”、托盘菜单或设备页“连接设备” |
@@ -276,7 +279,7 @@ cargo clippy --workspace --all-targets -- -D warnings
 
 ```text
 target\release\remote-buddy-desktop.exe
-target\release\bundle\nsis\Remote Buddy_0.2.1_x64-setup.exe
+target\release\bundle\nsis\Remote Buddy_0.3.0_x64-setup.exe
 ```
 
 开发说明见 [DEVELOPMENT.md](docs/DEVELOPMENT.md)，贡献流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。
@@ -289,6 +292,8 @@ target\release\bundle\nsis\Remote Buddy_0.2.1_x64-setup.exe
 - 语音识别由第三方输入法完成，本项目不包含语音识别模型，也不保存音频或转写文本。
 - VB-CABLE 为第三方软件，不随本项目分发。
 - 切换到以管理员身份运行的目标应用时，Remote Buddy 也需要以管理员权限运行。
+- 管理员开机启动依赖 Windows 计划任务；企业安全策略可能禁止创建或运行该任务。若创建失败，设置页会显示原因。
+- 管理员开机启动不会绕过手动启动时的 UAC 提示；只有计划任务在登录时启动的实例直接使用最高权限。
 - 某些全屏游戏、反作弊程序、远程桌面或覆盖层软件可能拦截输入法和窗口切换。
 - 当前安装包未签名，SmartScreen 可能提示未知发布者。
 - 本项目不是 Google 官方产品，也不提供 Chromecast 固件或系统级蓝牙驱动修复。
@@ -305,6 +310,7 @@ target\release\bundle\nsis\Remote Buddy_0.2.1_x64-setup.exe
 | Windows 11 能用吗？ | 可以尝试，项目共享 Windows 10/11 x64 构建；最终以诊断页和实体按键测试为准。 |
 | 会上传音频或转写文本吗？ | Remote Buddy 不会。音频只在本机内存和 VB-CABLE 之间流转；微信/搜狗等输入法是否使用云端识别，以其隐私政策为准。 |
 | 如何一键切换到 ChatGPT？ | 在“按键映射”中选择“切换应用”，从窗口列表选择 ChatGPT，或填写其 EXE 路径并保存。 |
+| 开机后为什么只看到托盘图标？ | 可能开启了“静默启动”。点击托盘图标或托盘菜单中的“显示主窗口”即可打开。 |
 
 更完整的步骤和排错方法见 [用户手册](docs/USER_GUIDE.md) 与 [诊断说明](docs/DIAGNOSTICS.md)。
 

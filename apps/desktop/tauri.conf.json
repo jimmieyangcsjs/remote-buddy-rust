@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Remote Buddy",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "identifier": "dev.remotebuddy.windows",
   "build": {
     "beforeDevCommand": {
@@ -25,6 +25,7 @@
         "minWidth": 760,
         "minHeight": 560,
         "center": true,
+        "visible": false,
         "decorations": false,
         "backgroundColor": "#070b11",
         "transparent": false,

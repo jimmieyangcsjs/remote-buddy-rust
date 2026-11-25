@@ -241,6 +241,7 @@ fn migrate_v1(object: &Map<String, Value>) -> Result<AppConfig, ConfigError> {
             v1.language
         },
         launch_at_startup: v1.launch_at_startup,
+        silent_start: false,
         minimize_to_tray: v1.minimize_to_tray_on_close,
         run_as_admin: true,
         has_completed_onboarding: v1.has_completed_onboarding,

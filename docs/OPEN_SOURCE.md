@@ -92,7 +92,6 @@ Rust + Tauri 2 实现为本项目独立开发。上游项目的：
 | chrono | 时间戳 | MIT 或 Apache-2.0 |
 | crossbeam-channel | 跨线程事件通道 | MIT 或 Apache-2.0 |
 | atomic-write-file | 配置原子写入 | MIT |
-| tauri-plugin-autostart | 开机启动 | MIT 或 Apache-2.0 |
 | tauri-plugin-single-instance | 单实例运行 | MIT 或 Apache-2.0 |
 
 ### 4.2 前端
