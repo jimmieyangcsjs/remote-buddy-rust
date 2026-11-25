@@ -3119,7 +3119,7 @@ checksum = "d902046e6a28a1e4c3cab97258a0ce11e994903f01c2d97a9447a0b3df85f4f6"
 
 [[package]]
 name = "remote-buddy-core"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "async-trait",
  "atomic-write-file",
@@ -3131,7 +3131,7 @@ dependencies = [
 
 [[package]]
 name = "remote-buddy-desktop"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "async-trait",
  "chrono",
@@ -3151,7 +3151,7 @@ dependencies = [
 
 [[package]]
 name = "remote-buddy-hid-tap"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "serde",
  "thiserror 2.0.21",
@@ -3159,11 +3159,11 @@ dependencies = [
 
 [[package]]
 name = "remote-buddy-hid-tap-agent"
-version = "0.2.0"
+version = "0.2.1"
 
 [[package]]
 name = "remote-buddy-windows"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "cpal",
  "crossbeam-channel",

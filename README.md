@@ -66,7 +66,7 @@ Windows 可以配对手柄和遥控器，却很难把 Chromecast 遥控器的**�
 - **三种手势分开配置**：每个普通按键可独立设置单击、双击和长按；长按既可在 700 ms 触发一次，也可按住保持到松开。
 - **按键联动不是装饰**：实体按键会驱动虚拟遥控器高亮、事件区和托盘最近按键状态。
 - **应用切换更可靠**：支持从运行窗口选择或手动填写 EXE，并针对 Magpie、高权限窗口和最大化窗口做了处理。
-- **轻量桌面实现**：Rust + Tauri 2，当前安装包约 3.72 MiB，独立 EXE 约 5.83 MiB，仅提供 x64 构建。
+- **轻量桌面实现**：Rust + Tauri 2，当前安装包约 3.72 MiB，独立 EXE 约 5.82 MiB，仅提供 x64 构建。
 - **中文优先**：默认简体中文界面，可在设置中切换 English。
 
 ## 典型用法
@@ -136,7 +136,7 @@ Windows 可以配对手柄和遥控器，却很难把 Chromecast 遥控器的**�
 
 前往 [Releases](https://github.com/jimmieyangcsjs/remote-buddy-rust/releases/latest) 下载最新版本。每个版本同时提供：
 
-- `Remote Buddy_0.2.0_x64-setup.exe`：推荐使用的 NSIS 安装包，默认安装到 `C:\Program Files\Remote Buddy`，安装时需要管理员权限；检测到旧版按用户安装时会先清理旧副本。
+- `Remote Buddy_0.2.1_x64-setup.exe`：推荐使用的 NSIS 安装包，默认安装到 `C:\Program Files\Remote Buddy`，安装时需要管理员权限；检测到旧版按用户安装时会先清理旧副本。
 - `remote-buddy-desktop.exe`：独立运行版，适合已经安装 WebView2 的电脑。
 - `SHA256SUMS.txt`：发布文件校验值。
 
@@ -276,7 +276,7 @@ cargo clippy --workspace --all-targets -- -D warnings
 
 ```text
 target\release\remote-buddy-desktop.exe
-target\release\bundle\nsis\Remote Buddy_0.2.0_x64-setup.exe
+target\release\bundle\nsis\Remote Buddy_0.2.1_x64-setup.exe
 ```
 
 开发说明见 [DEVELOPMENT.md](docs/DEVELOPMENT.md)，贡献流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。

@@ -94,7 +94,7 @@ cargo build --release -p remote-buddy-desktop --features custom-protocol
 
 ```text
 target\release\remote-buddy-desktop.exe
-target\release\bundle\nsis\Remote Buddy_0.2.0_x64-setup.exe
+target\release\bundle\nsis\Remote Buddy_0.2.1_x64-setup.exe
 ```
 
 ## 6. Release 配置

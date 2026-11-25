@@ -59,7 +59,7 @@ Remote Buddy 是本地桌面应用，不具备以下安全边界：
 每个 Release 提供 `SHA256SUMS.txt`。下载后可校验：
 
 ```powershell
-Get-FileHash .\Remote-Buddy_0.2.0_x64-setup.exe -Algorithm SHA256
+Get-FileHash '.\Remote Buddy_0.2.1_x64-setup.exe' -Algorithm SHA256
 ```
 
 当前发布包未进行商业代码签名，因此 SHA-256 校验不能替代发布者身份认证。请以 GitHub Releases 页面和仓库提交记录为准。
