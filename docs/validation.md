@@ -8,7 +8,7 @@
 - pnpm: 11.25.0
 - OS: Microsoft Windows NT 10.0.19044.0
 - WebView2: 157.0.4341.60
-- Generated: 2026-11-25 09:02:27 +08:00
+- Generated: 2026-11-25 09:35:45 +08:00
 
 ## Automated checks
 
@@ -24,8 +24,8 @@
 
 | Artifact | Path | MiB | SHA-256 | Signature |
 | --- | --- | ---: | --- | --- |
-| Application EXE | `target\release\remote-buddy-desktop.exe` | 5.83 | 1558F43536819F022B1DC2EDF58D38F36E4F04274AC0D95CBDE585981F1B211F | NotSigned |
-| NSIS installer | `target\release\bundle\nsis\Remote Buddy_0.2.0_x64-setup.exe` | 3.72 | 2B5F90CCA2F5EA21D4D022ACA408F055D884B77B08A2550705130A45C8E42477 | NotSigned |
+| Application EXE | `target\release\remote-buddy-desktop.exe` | 5.83 | AD07BADEFEA1947162428F5D036400BC1DB5BF9B4126D5FCEB10A282EA61D0CF | NotSigned |
+| NSIS installer | `target\release\bundle\nsis\Remote Buddy_0.2.0_x64-setup.exe` | 3.72 | A7EAA501BFE96CE02B2E58594C2842909E55B17C52ACAEB07284DC2FD2D43973 | NotSigned |
 
 Artifacts are produced by `build.ps1`; validation does not rebuild them.
 
