@@ -3,9 +3,10 @@ use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tokio::sync::{mpsc, watch};
-use tokio::time::sleep;
+use tokio::time::{Instant, sleep};
 
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(20);
+const STABLE_RESET: Duration = Duration::from_secs(60);
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -125,8 +126,11 @@ fn spawn_supervisor_with_policy<B: LinkBackend>(
 
     tokio::spawn(async move {
         let mut desired = initial_device;
+        let mut last_device = desired.clone();
         let mut failures = 0_u32;
         let mut last_error = None;
+        let mut first_attempt = true;
+        let mut recovering = false;
 
         loop {
             let Some(device_id) = desired.clone() else {
@@ -142,11 +146,22 @@ fn spawn_supervisor_with_policy<B: LinkBackend>(
                 );
                 match command_rx.recv().await {
                     Some(SupervisorCommand::Connect(next)) => {
+                        last_device = Some(next.clone());
                         desired = Some(next);
                         failures = 0;
                         last_error = None;
+                        first_attempt = true;
+                        recovering = false;
                     }
-                    Some(SupervisorCommand::RetryNow) => {}
+                    Some(SupervisorCommand::RetryNow) => {
+                        if let Some(previous) = last_device.clone() {
+                            desired = Some(previous);
+                            failures = 0;
+                            last_error = None;
+                            first_attempt = true;
+                            recovering = false;
+                        }
+                    }
                     Some(SupervisorCommand::Disconnect) => {}
                     Some(SupervisorCommand::Shutdown) | None => break,
                 }
@@ -170,9 +185,12 @@ fn spawn_supervisor_with_policy<B: LinkBackend>(
                     command = command_rx.recv() => {
                         match command {
                             Some(SupervisorCommand::Connect(next)) => {
+                                last_device = Some(next.clone());
                                 desired = Some(next);
                                 failures = 0;
                                 last_error = None;
+                                first_attempt = true;
+                                recovering = false;
                                 break None;
                             }
                             Some(SupervisorCommand::Disconnect) => {
@@ -198,42 +216,46 @@ fn spawn_supervisor_with_policy<B: LinkBackend>(
 
             match connection_result {
                 Ok(mut session) => {
-                    failures = 0;
-                    last_error = None;
+                    let connected_at = Instant::now();
+                    first_attempt = false;
+                    recovering = false;
                     publish(
                         &state_tx,
                         ConnectionSnapshot {
                             state: DeviceState::Ready,
                             device_id: Some(device_id.clone()),
-                            failures: 0,
+                            failures,
                             attempt: 0,
                             last_error: None,
                         },
                     );
 
                     let mut closed = Box::pin(session.wait_closed());
-                    let reason = tokio::select! {
-                        command = command_rx.recv() => match command {
-                            Some(SupervisorCommand::Connect(next)) => {
-                                desired = Some(next);
-                                failures = 0;
-                                last_error = None;
-                                None
-                            }
-                            Some(SupervisorCommand::Disconnect) => {
-                                desired = None;
-                                failures = 0;
-                                last_error = None;
-                                None
-                            }
-                            Some(SupervisorCommand::RetryNow) => {
-                                failures = 0;
-                                last_error = None;
-                                Some("manual retry".to_string())
-                            }
-                            Some(SupervisorCommand::Shutdown) | None => return,
-                        },
-                        reason = &mut closed => Some(reason),
+                    let reason = loop {
+                        tokio::select! {
+                            command = command_rx.recv() => match command {
+                                Some(SupervisorCommand::Connect(next)) => {
+                                    last_device = Some(next.clone());
+                                    desired = Some(next);
+                                    failures = 0;
+                                    last_error = None;
+                                    first_attempt = true;
+                                    recovering = false;
+                                    break None;
+                                }
+                                Some(SupervisorCommand::Disconnect) => {
+                                    desired = None;
+                                    failures = 0;
+                                    last_error = None;
+                                    first_attempt = true;
+                                    recovering = false;
+                                    break None;
+                                }
+                                Some(SupervisorCommand::RetryNow) => {}
+                                Some(SupervisorCommand::Shutdown) | None => return,
+                            },
+                            reason = &mut closed => break Some(reason),
+                        }
                     };
 
                     let Some(reason) = reason else {
@@ -241,6 +263,7 @@ fn spawn_supervisor_with_policy<B: LinkBackend>(
                     };
                     failures = 1;
                     last_error = Some(reason.clone());
+                    let stable = connected_at.elapsed() >= STABLE_RESET;
                     publish(
                         &state_tx,
                         ConnectionSnapshot {
@@ -251,6 +274,14 @@ fn spawn_supervisor_with_policy<B: LinkBackend>(
                             last_error: Some(reason),
                         },
                     );
+                    if !stable {
+                        desired = None;
+                        last_error = Some(
+                            "连路在稳定前中断，已停止自动重试；请确认蓝牙鼠标正常后手动重连"
+                                .to_string(),
+                        );
+                        continue;
+                    }
                 }
                 Err(error) => {
                     failures = failures.saturating_add(1);
@@ -265,28 +296,47 @@ fn spawn_supervisor_with_policy<B: LinkBackend>(
                             last_error: Some(error),
                         },
                     );
+                    if first_attempt || recovering {
+                        desired = None;
+                        first_attempt = false;
+                        recovering = false;
+                        continue;
+                    }
                 }
             }
 
+            recovering = true;
             let delay = policy.delay(failures.saturating_sub(1));
             let mut waiting = Box::pin(sleep(delay));
             tokio::select! {
                 command = command_rx.recv() => match command {
                     Some(SupervisorCommand::Connect(next)) => {
+                        last_device = Some(next.clone());
                         desired = Some(next);
                         failures = 0;
                         last_error = None;
+                        first_attempt = true;
+                        recovering = false;
                     }
                     Some(SupervisorCommand::Disconnect) => {
                         desired = None;
                         failures = 0;
                         last_error = None;
+                        first_attempt = true;
+                        recovering = false;
                     }
-                    Some(SupervisorCommand::RetryNow) => {}
+                    Some(SupervisorCommand::RetryNow) => {
+                        failures = 0;
+                        last_error = None;
+                    }
                     Some(SupervisorCommand::Shutdown) | None => return,
                 },
                 _ = &mut waiting => {}
             }
+            if desired.is_none() {
+                continue;
+            }
+            desired = last_device.clone();
         }
     });
 
@@ -305,7 +355,7 @@ mod tests {
     use super::*;
     use std::sync::atomic::{AtomicUsize, Ordering};
     use std::sync::{Arc, Mutex};
-    use tokio::time::timeout;
+    use tokio::time::{advance, timeout};
 
     struct MockSession {
         closed: tokio::sync::oneshot::Receiver<String>,
@@ -324,6 +374,7 @@ mod tests {
     struct MockBackend {
         attempts: Arc<AtomicUsize>,
         closers: Arc<Mutex<Vec<tokio::sync::oneshot::Sender<String>>>>,
+        fail_first: usize,
     }
 
     #[async_trait]
@@ -331,7 +382,10 @@ mod tests {
         type Session = MockSession;
 
         async fn connect(&self, _device_id: &str) -> Result<Self::Session, String> {
-            self.attempts.fetch_add(1, Ordering::SeqCst);
+            let attempt = self.attempts.fetch_add(1, Ordering::SeqCst) + 1;
+            if attempt <= self.fail_first {
+                return Err("remote unavailable".to_string());
+            }
             let (tx, rx) = tokio::sync::oneshot::channel();
             self.closers.lock().unwrap().push(tx);
             Ok(MockSession { closed: rx })
@@ -355,15 +409,21 @@ mod tests {
         .expect("state should be reached")
     }
 
-    #[tokio::test]
-    async fn reconnects_after_unexpected_disconnect() {
-        let backend = MockBackend {
+    fn backend(fail_first: usize) -> MockBackend {
+        MockBackend {
             attempts: Arc::new(AtomicUsize::new(0)),
             closers: Arc::new(Mutex::new(Vec::new())),
-        };
+            fail_first,
+        }
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn reconnects_after_unexpected_disconnect() {
+        let backend = backend(0);
         let handle = spawn_supervisor(backend.clone(), Some("device-1".to_string()));
         let mut states = handle.subscribe();
         wait_for(&mut states, DeviceState::Ready).await;
+        advance(STABLE_RESET + Duration::from_secs(1)).await;
         let closer = backend.closers.lock().unwrap().remove(0);
         closer.send("remote slept".to_string()).unwrap();
         wait_for(&mut states, DeviceState::Degraded).await;
@@ -371,18 +431,67 @@ mod tests {
         assert!(backend.attempts.load(Ordering::SeqCst) >= 2);
     }
 
-    #[tokio::test]
+    #[tokio::test(start_paused = true)]
+    async fn initial_failure_does_not_start_a_reconnect_storm() {
+        let backend = backend(1);
+        let handle = spawn_supervisor(backend.clone(), Some("device-1".to_string()));
+        let mut states = handle.subscribe();
+        wait_for(&mut states, DeviceState::Disconnected).await;
+        advance(Duration::from_secs(120)).await;
+        assert_eq!(backend.attempts.load(Ordering::SeqCst), 1);
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn recovery_is_limited_to_one_attempt_per_stable_session() {
+        let backend = backend(0);
+        let handle = spawn_supervisor(backend.clone(), Some("device-1".to_string()));
+        let mut states = handle.subscribe();
+        wait_for(&mut states, DeviceState::Ready).await;
+        advance(STABLE_RESET + Duration::from_secs(1)).await;
+        backend
+            .closers
+            .lock()
+            .unwrap()
+            .remove(0)
+            .send("first drop".to_string())
+            .unwrap();
+        wait_for(&mut states, DeviceState::Degraded).await;
+        wait_for(&mut states, DeviceState::Ready).await;
+        assert_eq!(backend.attempts.load(Ordering::SeqCst), 2);
+
+        backend
+            .closers
+            .lock()
+            .unwrap()
+            .remove(0)
+            .send("short drop".to_string())
+            .unwrap();
+        wait_for(&mut states, DeviceState::Disconnected).await;
+        advance(Duration::from_secs(300)).await;
+        assert_eq!(backend.attempts.load(Ordering::SeqCst), 2);
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn retry_now_keeps_a_healthy_session_alive() {
+        let backend = backend(0);
+        let handle = spawn_supervisor(backend.clone(), Some("device-1".to_string()));
+        let mut states = handle.subscribe();
+        wait_for(&mut states, DeviceState::Ready).await;
+        handle.retry_now().await.unwrap();
+        advance(Duration::from_secs(10)).await;
+        assert_eq!(backend.attempts.load(Ordering::SeqCst), 1);
+        assert_eq!(states.borrow().state, DeviceState::Ready);
+    }
+
+    #[tokio::test(start_paused = true)]
     async fn manual_disconnect_suppresses_reconnect() {
-        let backend = MockBackend {
-            attempts: Arc::new(AtomicUsize::new(0)),
-            closers: Arc::new(Mutex::new(Vec::new())),
-        };
+        let backend = backend(0);
         let handle = spawn_supervisor(backend.clone(), Some("device-1".to_string()));
         let mut states = handle.subscribe();
         wait_for(&mut states, DeviceState::Ready).await;
         handle.disconnect().await.unwrap();
         wait_for(&mut states, DeviceState::Disconnected).await;
-        sleep(Duration::from_millis(1200)).await;
+        advance(Duration::from_secs(120)).await;
         assert_eq!(backend.attempts.load(Ordering::SeqCst), 1);
     }
 }

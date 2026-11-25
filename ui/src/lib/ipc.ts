@@ -77,6 +77,10 @@ export function enableButtonCapture() {
   return invoke<void>("enable_button_capture");
 }
 
+export function disableButtonCapture() {
+  return invoke<void>("disable_button_capture");
+}
+
 export function restartAsAdministrator() {
   return invoke<void>("restart_as_administrator");
 }

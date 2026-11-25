@@ -251,7 +251,7 @@ export function connectionPresentation(
           title: "Connection needs attention",
           subtitle:
             lastError?.trim() ||
-            `${name} is temporarily unavailable. Reconnect will be retried automatically.`,
+            `${name} is temporarily unavailable. One controlled recovery may be attempted; otherwise reconnect manually.`,
           badge: "ATTENTION",
           tone: "amber",
           pulse: false,
@@ -298,7 +298,7 @@ export function connectionPresentation(
         title: "连接需要处理",
         subtitle:
           lastError?.trim() ||
-          `${name} 暂不可用，程序会自动重试。你也可以回到设备页手动重连。`,
+          `${name} 暂不可用。程序最多做一次受控恢复；失败后请回到设备页手动重连。`,
         badge: "需处理",
         tone: "amber",
         pulse: false,

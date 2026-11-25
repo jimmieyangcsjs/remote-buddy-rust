@@ -176,6 +176,13 @@ fn enable_button_capture() -> Result<(), String> {
 }
 
 #[tauri::command]
+fn disable_button_capture() -> Result<(), String> {
+    let executable =
+        std::env::current_exe().map_err(|error| format!("无法定位当前程序：{error}"))?;
+    remote_buddy_windows::capture_profile::request_elevated_capture_restore(&executable)
+}
+
+#[tauri::command]
 fn restart_as_administrator(app: AppHandle) -> Result<(), String> {
     if remote_buddy_windows::elevation::is_elevated() {
         return Ok(());
@@ -315,6 +322,7 @@ pub fn run() {
             list_running_applications,
             open_external_url,
             enable_button_capture,
+            disable_button_capture,
             restart_as_administrator,
             show_main_window,
             toggle_main_window_maximize,

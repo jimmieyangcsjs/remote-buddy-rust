@@ -8,7 +8,7 @@
 - pnpm: 11.25.0
 - OS: Microsoft Windows NT 10.0.19044.0
 - WebView2: 157.0.4341.60
-- Generated: 2026-11-24 16:11:53 +08:00
+- Generated: 2026-11-25 09:02:27 +08:00
 
 ## Automated checks
 
@@ -24,8 +24,8 @@
 
 | Artifact | Path | MiB | SHA-256 | Signature |
 | --- | --- | ---: | --- | --- |
-| Application EXE | `target\release\remote-buddy-desktop.exe` | 5.82 | 1A653482A9D082325E2904E947AAD218E0EF8E8D8475CA0E92B8A470BCA8B5EB | NotSigned |
-| NSIS installer | `target\release\bundle\nsis\Remote Buddy_0.2.0_x64-setup.exe` | 3.72 | F7DB69F65CCD25EBBEFEBC17F9CF861A00DE730D7A90B42C3A60E62CBE1EE24B | NotSigned |
+| Application EXE | `target\release\remote-buddy-desktop.exe` | 5.83 | 1558F43536819F022B1DC2EDF58D38F36E4F04274AC0D95CBDE585981F1B211F | NotSigned |
+| NSIS installer | `target\release\bundle\nsis\Remote Buddy_0.2.0_x64-setup.exe` | 3.72 | 2B5F90CCA2F5EA21D4D022ACA408F055D884B77B08A2550705130A45C8E42477 | NotSigned |
 
 Artifacts are produced by `build.ps1`; validation does not rebuild them.
 
@@ -34,13 +34,16 @@ Artifacts are produced by `build.ps1`; validation does not rebuild them.
 Hardware checks are recorded separately after running on a paired G9N9N.
 
 - [ ] Pair the G9N9N through Windows Settings
-- [ ] ETW starts without elevation
-- [ ] GATT probe binds the ACL handle
+- [ ] Startup with button capture disabled leaves the global BthPort ETW session off
+- [ ] First remote button notification binds the ACL handle without a GATT probe loop
+- [ ] Windows GATT keepalive is active, or the log reports that the driver does not support it
+- [ ] No automatic reconnect loop after an initial connection failure
 - [ ] Up / Down / Left / Right / Ok / Back / Home
 - [ ] Menu / volume / mute / play-pause / power / app keys
 - [ ] No duplicate Raw Input + ETW action
 - [ ] SmartToggle short press and HoldToTalk long press
 - [ ] Audio reaches CABLE Input and live gain changes are audible
 - [ ] Autostart launches the application after sign-in
-- [ ] Tray reconnect after 10+ minutes idle
+- [ ] Idle for 10+ minutes without periodic GATT probing or forced reconnects
+- [ ] Intel Windows 11: Bluetooth mouse remains stable after reboot
 - [ ] Bluetooth radio off/on and sleep/resume recovery

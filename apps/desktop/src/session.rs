@@ -19,8 +19,6 @@ use tokio::sync::{RwLock, mpsc::UnboundedReceiver};
 const HOLD_THRESHOLD: Duration = Duration::from_millis(700);
 const KEEPALIVE_INTERVAL: Duration = Duration::from_secs(20);
 const MAX_HANDS_FREE: Duration = Duration::from_secs(300);
-const ETW_BIND_ATTEMPTS: usize = 12;
-const ETW_BIND_RETRY: Duration = Duration::from_secs(1);
 const LEVEL_EMIT_INTERVAL: Duration = Duration::from_millis(50);
 const VOICE_TRIGGER_DEDUP: Duration = Duration::from_millis(700);
 
@@ -103,6 +101,15 @@ impl LinkBackend for BleBackend {
 
         self.logger
             .info(format!("{} 已连接，ATVV 服务就绪", device.name));
+        if transport.maintains_connection() {
+            self.logger
+                .info(format!("{} 已启用 Windows GATT 连接保活", device.name));
+        } else {
+            self.logger.warn(format!(
+                "{} 的蓝牙驱动不支持 GATT 长连接保活，将只在系统报告断线时恢复",
+                device.name
+            ));
+        }
 
         if let Some(handle) = transport.control_handle() {
             self.logger.info(format!(
@@ -118,51 +125,8 @@ impl LinkBackend for BleBackend {
 
         if let Some(etw) = self.etw.clone() {
             etw.arm_fallback_binding(&device.id, &device.model_type);
-            let device_id = device.id.clone();
-            let model_type = device.model_type.clone();
-            let address = device.bluetooth_address;
-            let logger = self.logger.clone();
-            tokio::spawn(async move {
-                if etw.is_device_bound(&device_id) {
-                    logger.info(format!("{device_id} 的 BthPort ETW 连接句柄已绑定"));
-                    return;
-                }
-                logger.info("正在绑定 BthPort ETW 连接句柄，按键后可自动确认");
-                let mut last_error = None;
-                for attempt in 1..=ETW_BIND_ATTEMPTS {
-                    if etw.is_device_bound(&device_id) {
-                        logger.info(format!("{device_id} 的 BthPort ETW 连接句柄已绑定"));
-                        return;
-                    }
-                    let Some(marker) = etw.register_probe(&device_id, &model_type, address) else {
-                        last_error = Some("无法登记 GATT 绑定探测".to_string());
-                        tokio::time::sleep(ETW_BIND_RETRY).await;
-                        continue;
-                    };
-                    let probe = tokio::task::spawn_blocking(move || {
-                        remote_buddy_windows::ble::request_gatt_probe(address, marker)
-                    })
-                    .await
-                    .map_err(|error| error.to_string())
-                    .and_then(|result| result.map_err(|error| error.to_string()));
-                    if let Err(error) = probe {
-                        last_error = Some(error);
-                    }
-                    if attempt < ETW_BIND_ATTEMPTS {
-                        tokio::time::sleep(ETW_BIND_RETRY).await;
-                    }
-                }
-                if etw.is_device_bound(&device_id) {
-                    logger.info(format!("{device_id} 的 BthPort ETW 连接句柄已绑定"));
-                } else {
-                    logger.warn(format!(
-                        "BthPort ETW 自动绑定未完成；可按键后手动重连{}",
-                        last_error
-                            .map(|error| format!("（最近错误：{error}）"))
-                            .unwrap_or_default()
-                    ));
-                }
-            });
+            self.logger
+                .info("BthPort ETW 使用按键通知完成绑定，不再循环发起 GATT 探测连接");
         }
 
         Ok(BleSession {

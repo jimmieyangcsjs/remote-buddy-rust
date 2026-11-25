@@ -279,8 +279,8 @@ export function DevicesPage() {
                   `Last error: ${connectionDetail.lastError}`,
                 )
               : t(
-                  "后台会在设备休眠、系统唤醒或蓝牙短暂断开后自动重连；手动断开不会自动恢复。",
-                  "The background service reconnects after sleep, resume, or a brief Bluetooth drop. A manual disconnect is not restored automatically.",
+                  "连接建立后由 Windows GATT 保活。稳定连接意外断开时只做一次受控恢复；若恢复失败需手动重试，避免反复连接干扰蓝牙鼠标。",
+                  "Windows GATT keeps an established link alive. After an unexpected drop from a stable session, one controlled recovery is attempted. If it fails, reconnect manually instead of forcing a loop that can disrupt a Bluetooth mouse.",
                 )}
           </div>
         </section>

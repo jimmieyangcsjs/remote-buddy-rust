@@ -13,13 +13,15 @@
 - 重绘应用、托盘和遥控器图标，优化中文界面和托盘联动状态。
 - 显示真实 RMS / PEAK 音频电平。
 - 仅发布 Windows x64，使用 LTO、符号剥离和静态 MSVC 运行库。
+- 蓝牙连接改为 GATT 保活，移除周期性 GATT 探测和无限强制重连。
+- 按键增强支持原始值备份与一键恢复，改善 Intel 蓝牙环境下的兼容性。
 
 ## 安装
 
 推荐下载并运行：
 
 ```text
-Remote-Buddy_0.2.0_x64-setup.exe
+Remote Buddy_0.2.0_x64-setup.exe
 ```
 
 独立版：
@@ -28,7 +30,7 @@ Remote-Buddy_0.2.0_x64-setup.exe
 remote-buddy-desktop.exe
 ```
 
-独立版要求系统已安装 WebView2。安装版内嵌 WebView2 静默引导程序。
+安装版默认安装到 `C:\Program Files\Remote Buddy`，需要管理员权限，并会在升级时清理旧版按用户安装。独立版要求系统已安装 WebView2。安装版内嵌 WebView2 静默引导程序。
 
 ## 首次使用
 
@@ -80,7 +82,7 @@ remote-buddy-desktop.exe
 下载 `SHA256SUMS.txt` 后，在 PowerShell 中执行：
 
 ```powershell
-Get-FileHash .\Remote-Buddy_0.2.0_x64-setup.exe -Algorithm SHA256
+Get-FileHash '.\Remote Buddy_0.2.0_x64-setup.exe' -Algorithm SHA256
 ```
 
 将结果与 `SHA256SUMS.txt` 比较。

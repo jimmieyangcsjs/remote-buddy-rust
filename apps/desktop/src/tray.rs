@@ -100,6 +100,13 @@ pub fn build(app: &tauri::App) -> tauri::Result<()> {
     let diagnostics = MenuItem::with_id(app, "diagnostics", "打开诊断页", true, None::<&str>)?;
     let export = MenuItem::with_id(app, "export", "导出诊断信息", true, None::<&str>)?;
     let enhance = MenuItem::with_id(app, "enhance", "启用/刷新按键增强", true, None::<&str>)?;
+    let restore = MenuItem::with_id(
+        app,
+        "restore-bluetooth",
+        "恢复蓝牙默认设置",
+        true,
+        None::<&str>,
+    )?;
     let reconnect = MenuItem::with_id(app, "reconnect", "重新连接遥控器", true, None::<&str>)?;
     let disconnect = MenuItem::with_id(app, "disconnect", "断开连接", false, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "退出 Remote Buddy", true, None::<&str>)?;
@@ -122,6 +129,7 @@ pub fn build(app: &tauri::App) -> tauri::Result<()> {
             &disconnect,
             &export,
             &enhance,
+            &restore,
             &separator_3,
             &quit,
         ],
@@ -141,6 +149,7 @@ pub fn build(app: &tauri::App) -> tauri::Result<()> {
             "disconnect" => request_disconnect(app),
             "export" => export_diagnostics(app),
             "enhance" => enable_button_capture(app),
+            "restore-bluetooth" => restore_bluetooth_profile(app),
             "quit" => app.exit(0),
             _ => {}
         })
@@ -263,6 +272,24 @@ fn enable_button_capture(app: &AppHandle) {
             state.logger.warn(format!("托盘启用按键增强失败：{error}"));
             if let Some(tray) = app.try_state::<TrayState>() {
                 tray.show_notice("按键增强启动失败，请查看日志");
+            }
+        }
+    }
+}
+
+fn restore_bluetooth_profile(app: &AppHandle) {
+    let state = app.state::<AppState>();
+    let result = std::env::current_exe()
+        .map_err(|error| format!("无法定位当前程序：{error}"))
+        .and_then(|executable| {
+            remote_buddy_windows::capture_profile::request_elevated_capture_restore(&executable)
+        });
+    match result {
+        Ok(()) => state.logger.info("托盘已请求恢复蓝牙默认设置"),
+        Err(error) => {
+            state.logger.warn(format!("托盘恢复蓝牙设置失败：{error}"));
+            if let Some(tray) = app.try_state::<TrayState>() {
+                tray.show_notice("恢复蓝牙设置失败，请查看日志");
             }
         }
     }

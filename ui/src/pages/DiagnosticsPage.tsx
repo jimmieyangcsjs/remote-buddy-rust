@@ -15,6 +15,7 @@ import { PageHeader } from "../components/PageHeader";
 import { StatusPill } from "../components/StatusPill";
 import { useAppStore } from "../store";
 import {
+  disableButtonCapture,
   discoverDevices,
   enableButtonCapture,
   exportDiagnostics,
@@ -72,6 +73,29 @@ export function DiagnosticsPage() {
           t(
             "已启动管理员配置。请在 UAC 中选择“是”，随后重新加载蓝牙或重启电脑。",
             "Administrator setup started. Approve the UAC prompt, then reload Bluetooth or restart Windows.",
+          ),
+          "info",
+        ),
+      )
+      .catch((error: unknown) => setBackendError(String(error)))
+      .finally(() => setBusy(false));
+  };
+
+  const restoreCapture = () => {
+    const confirmed = window.confirm(
+      t(
+        "将恢复启用按键增强前的 BthPort 注册表参数，并停止全局蓝牙敏感日志。恢复后普通实体按键可能暂时不可用，需要重新启用。确定继续吗？",
+        "This restores the BthPort values saved before button capture was enabled and stops global Bluetooth sensitive logging. Ordinary buttons may stop working until capture is enabled again. Continue?",
+      ),
+    );
+    if (!confirmed) return;
+    setBusy(true);
+    void disableButtonCapture()
+      .then(() =>
+        showToast(
+          t(
+            "已启动管理员恢复流程。请在 UAC 中选择“是”，随后完全退出程序并重启电脑。",
+            "Administrator restore started. Approve the UAC prompt, then quit the app completely and restart Windows.",
           ),
           "info",
         ),
@@ -190,8 +214,8 @@ export function DiagnosticsPage() {
             </p>
             <p className="setup-callout-sub">
               {t(
-                "Windows 默认只向 ETW 暴露蓝牙事件头，遥控器的普通按键载荷会被省略。点击右侧按钮会弹出 UAC，仅为本机 BthPort 驱动写入三项诊断参数；不会联网或上传数据。完成后重新加载蓝牙或重启电脑。",
-                "Windows exposes only Bluetooth event headers to ETW by default, so ordinary button payloads are omitted. The button opens UAC and writes three local BthPort diagnostic values. No network access or upload occurs. Reload Bluetooth or restart Windows afterward.",
+                "Windows 默认只向 ETW 暴露蓝牙事件头，遥控器的普通按键载荷会被省略。点击右侧按钮会弹出 UAC，并先备份原值，再为本机 BthPort 驱动写入三项诊断参数；不会联网或上传数据。注意：该设置对整块蓝牙适配器生效，部分 Intel 蓝牙驱动会连带影响蓝牙鼠标，完成后如出现鼠标异常请立即恢复。",
+                "Windows exposes only Bluetooth event headers to ETW by default, so ordinary button payloads are omitted. The button opens UAC, backs up the original values, then writes three local BthPort diagnostic values. No network access or upload occurs. Note: this applies to the whole Bluetooth adapter, and some Intel drivers may affect Bluetooth mice. Restore immediately if the mouse becomes unstable.",
               )}
             </p>
           </div>
@@ -228,6 +252,39 @@ export function DiagnosticsPage() {
           </div>
           <Button variant="ghost" size="sm" onClick={refresh} disabled={busy}>
             {t("再次检测", "Check again")}
+          </Button>
+        </section>
+      ) : null}
+
+      {hidTap?.sensitiveData ? (
+        <section
+          className="setup-callout"
+          aria-label={t("蓝牙兼容性恢复", "Bluetooth compatibility restore")}
+        >
+          <span className="setup-callout-icon">
+            <AlertTriangle size={18} />
+          </span>
+          <div className="setup-callout-copy">
+            <p className="setup-callout-title">
+              {t(
+                "全局蓝牙敏感诊断日志正在生效",
+                "Global Bluetooth sensitive diagnostics are active",
+              )}
+            </p>
+            <p className="setup-callout-sub">
+              {t(
+                "此设置对整块蓝牙适配器生效，不只影响遥控器。Intel 蓝牙环境下，如果重启后蓝牙鼠标无法连接、设备管理器报错或反复重连，请点击右侧恢复原值并重启电脑；程序会优先使用启用前保存的原值。",
+                "This setting applies to the whole Bluetooth adapter, not just the remote. On Intel Bluetooth, if a mouse cannot connect after reboot, shows a driver error, or reconnects repeatedly, restore the original values and restart Windows. Saved pre-enable values are restored first.",
+              )}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={restoreCapture}
+            disabled={busy}
+          >
+            {t("恢复蓝牙默认设置", "Restore Bluetooth defaults")}
           </Button>
         </section>
       ) : null}

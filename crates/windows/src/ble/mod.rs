@@ -71,6 +71,9 @@ fn enumerate_remotes(selector: &windows::core::HSTRING) -> Result<Vec<DeviceCand
             .Name()
             .map(|name| name.to_string_lossy())
             .unwrap_or_default();
+        if !supported_remote_name(&info_name) {
+            continue;
+        }
         let Ok(id) = info.Id() else {
             continue;
         };
@@ -94,9 +97,6 @@ fn enumerate_remotes(selector: &windows::core::HSTRING) -> Result<Vec<DeviceCand
         } else {
             info_name
         };
-        if !supported_remote_name(&name) {
-            continue;
-        }
         let Some(address) = address
             .filter(|address| *address != 0)
             .or_else(|| address_from_device_id(&id.to_string_lossy()))
@@ -124,7 +124,7 @@ pub mod atvv_transport {
     use tokio::sync::mpsc;
     use windows::Devices::Bluetooth::GenericAttributeProfile::{
         GattCharacteristic, GattClientCharacteristicConfigurationDescriptorValue,
-        GattCommunicationStatus, GattValueChangedEventArgs,
+        GattCommunicationStatus, GattSession, GattSessionStatus, GattValueChangedEventArgs,
     };
     use windows::Devices::Bluetooth::{BluetoothConnectionStatus, BluetoothLEDevice};
     use windows::Foundation::TypedEventHandler;
@@ -143,6 +143,8 @@ pub mod atvv_transport {
         control: GattCharacteristic,
         audio: GattCharacteristic,
         control_handle: Option<u16>,
+        session: GattSession,
+        maintains_connection: bool,
         notifications: Option<mpsc::UnboundedReceiver<AtvvNotification>>,
         audio_chunks: Option<mpsc::UnboundedReceiver<Vec<u8>>>,
         handler_tokens: Vec<(GattCharacteristic, i64)>,
@@ -184,7 +186,18 @@ pub mod atvv_transport {
         }
 
         pub fn is_alive(&self) -> bool {
-            self.device.ConnectionStatus() == Ok(BluetoothConnectionStatus::Connected)
+            let device_connected =
+                self.device.ConnectionStatus() == Ok(BluetoothConnectionStatus::Connected);
+            let session_active = self
+                .session
+                .SessionStatus()
+                .map(|status| status == GattSessionStatus::Active)
+                .unwrap_or(true);
+            device_connected && session_active
+        }
+
+        pub fn maintains_connection(&self) -> bool {
+            self.maintains_connection
         }
 
         pub fn name(&self) -> String {
@@ -210,6 +223,10 @@ pub mod atvv_transport {
 
     impl Drop for AtvvTransport {
         fn drop(&mut self) {
+            if self.maintains_connection {
+                let _ = self.session.SetMaintainConnection(false);
+            }
+            let _ = self.session.Close();
             for (characteristic, token) in self.handler_tokens.drain(..) {
                 let _ = characteristic.RemoveValueChanged(token);
             }
@@ -242,6 +259,9 @@ pub mod atvv_transport {
             return Err(BleError::ServiceNotFound(format!("{SERVICE_UUID:?}")));
         }
         let service = services.GetAt(0)?;
+        let session = service.Session()?;
+        let maintains_connection = session.CanMaintainConnection().unwrap_or(false)
+            && session.SetMaintainConnection(true).is_ok();
         let characters = service.GetCharacteristicsAsync()?.get()?;
         if characters.Status()? != GattCommunicationStatus::Success {
             return Err(BleError::Gatt(
@@ -319,6 +339,8 @@ pub mod atvv_transport {
             control: control.clone(),
             audio: audio.clone(),
             control_handle,
+            session,
+            maintains_connection,
             notifications: Some(notifications),
             audio_chunks: Some(audio_chunks),
             handler_tokens: vec![(control, control_token), (audio, audio_token)],

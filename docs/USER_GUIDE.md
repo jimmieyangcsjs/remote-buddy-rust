@@ -9,10 +9,10 @@
 从 [GitHub Releases](https://github.com/jimmieyangcsjs/remote-buddy-rust/releases/latest) 下载：
 
 ```text
-Remote-Buddy_0.2.0_x64-setup.exe
+Remote Buddy_0.2.0_x64-setup.exe
 ```
 
-双击安装。安装程序按当前用户安装，并内嵌 WebView2 静默引导程序。若系统没有 WebView2，安装过程中可能需要联网下载。
+双击安装。安装程序采用计算机范围安装，默认路径为 `C:\Program Files\Remote Buddy`，需要同意 UAC 管理员权限。若检测到旧版按用户安装，会先调用旧卸载程序清理副本，再安装到新目录。安装包内嵌 WebView2 静默引导程序；若系统没有 WebView2，安装过程中可能需要联网下载。
 
 ### 1.2 独立 EXE
 
@@ -57,7 +57,9 @@ remote-buddy-desktop.exe
 
 ### 2.3 自动重连
 
-程序在后台监督连接。设备休眠、系统唤醒或蓝牙短暂断开后会自动重试。
+程序在后台监督连接。连接建立后会优先启用 Windows GATT 保活，不再周期性断开重连，也不在连接成功后反复探测 GATT。
+
+如果稳定连接超过 60 秒后意外断开，程序最多执行一次受控恢复；恢复失败会停止自动尝试，等待你手动重连。首次连接失败或连接在稳定前反复中断时也不会无限重试，避免拖累同一适配器上的蓝牙键鼠。
 
 如果你点击了“断开”，自动重连会停止，必须手动点击“连接设备”。这是为了避免用户主动断开后又被后台恢复。
 
@@ -87,7 +89,9 @@ HKLM\SYSTEM\CurrentControlSet\Services\BthPort\Parameters
   EtwDropLargeEvents = 0
 ```
 
-这些值只影响本机蓝牙驱动向本机 ETW 会话提供诊断报告。程序不会静默修改注册表，也不会把内容上传。
+这些值位于本机蓝牙驱动参数中，用于向本机 ETW 会话提供诊断报告。程序不会静默修改注册表，也不会把内容上传。
+
+启用前，程序会把你原有的值备份到 `%APPDATA%\RemoteBuddy\capture-profile.backup.json`。这三个值是**适配器级**设置，同一蓝牙适配器上的鼠标、键盘也会受影响。部分 Intel 蓝牙驱动在 Windows 11 上可能因此出现设备断连、驱动告警或快速重连；遇到这种情况请按 10.3 节恢复。
 
 ### 3.3 状态判断
 
@@ -342,7 +346,11 @@ C:\Program Files\Example\Example.exe
 
 ### 10.3 恢复 BthPort 参数
 
-如果不再使用实体按键增强，可以请管理员将以下值恢复为 Windows 默认策略，或删除这三个应用创建的值：
+推荐在 Remote Buddy 的“诊断”页点击“恢复蓝牙默认设置”，或在托盘右键菜单选择同一操作。程序会请求管理员权限，并按首次启用前保存的备份精确恢复 `EtwLogSensitiveData`、`MaxEtwBytes` 和 `EtwDropLargeEvents`；如果原值本来不存在，会删除对应值。
+
+如果没有可用备份，程序只会删除与自身已知写入完全一致的值，不会改动其他软件或驱动设置的数值。恢复后请重启电脑，再确认蓝牙鼠标和键盘是否稳定。
+
+只有需要手动核对时才查看以下位置：
 
 ```text
 HKLM\SYSTEM\CurrentControlSet\Services\BthPort\Parameters
@@ -351,7 +359,7 @@ HKLM\SYSTEM\CurrentControlSet\Services\BthPort\Parameters
   EtwDropLargeEvents
 ```
 
-修改注册表前建议先导出备份。不同 Windows 版本和蓝牙驱动可能使用不同默认值，不要在不确定时随意覆盖。
+修改注册表前建议先导出备份。不同 Windows 版本和蓝牙驱动可能使用不同默认值，不要在不确定时随意覆盖。恢复默认值后，普通遥控器按键可能暂时不可用；需要时可在确认蓝牙键鼠稳定后重新启用按键增强。
 
 ## 11. 常见问题
 

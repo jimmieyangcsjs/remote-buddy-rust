@@ -142,8 +142,8 @@ export function SettingsPage() {
               <p className="toggle-title">{t("关闭到托盘", "Close to tray")}</p>
               <p className="toggle-sub">
                 {t(
-                  "关闭窗口不退出进程，保持设备连接和后台重连。",
-                  "Closing the window keeps the process, device connection, and reconnect loop running.",
+                  "关闭窗口不退出进程，保持设备连接与 GATT 保活。",
+                  "Closing the window keeps the process, device connection, and GATT keepalive running.",
                 )}
               </p>
             </div>
@@ -155,15 +155,15 @@ export function SettingsPage() {
           </div>
           <div className="toggle-row">
             <div className="toggle-copy">
-              <p className="toggle-title">{t("自动重连", "Automatic reconnect")}</p>
+              <p className="toggle-title">{t("连接保活", "Connection keepalive")}</p>
               <p className="toggle-sub">
                 {t(
-                  "设备休眠或系统唤醒后自动恢复；手动断开除外。",
-                  "Recovers after device sleep or system resume unless you disconnect manually.",
+                  "连接建立后由 Windows 维持；不再后台反复强制重连，避免与蓝牙鼠标争用适配器。",
+                  "Windows keeps the link alive after connect. The background service no longer forces repeated reconnects that can contend with a Bluetooth mouse.",
                 )}
               </p>
             </div>
-            <StatusPill tone="signal">{t("自动", "AUTO")}</StatusPill>
+            <StatusPill tone="signal">{t("保活", "KEEP")}</StatusPill>
           </div>
           <div className="toggle-row">
             <div className="toggle-copy">

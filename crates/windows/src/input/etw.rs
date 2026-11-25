@@ -167,7 +167,9 @@ impl EtwInputListener {
             stopped: stopped.clone(),
             refs: Arc::new(AtomicUsize::new(1)),
         };
-        listener.start_session()?;
+        if sensitive_data {
+            listener.start_session()?;
+        }
         Ok(listener)
     }
 

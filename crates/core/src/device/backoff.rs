@@ -32,22 +32,27 @@ impl Default for BackoffPolicy {
     fn default() -> Self {
         Self {
             steps: vec![
-                Duration::from_secs(1),
-                Duration::from_secs(2),
-                Duration::from_secs(4),
-                Duration::from_secs(8),
+                Duration::from_secs(3),
                 Duration::from_secs(15),
                 Duration::from_secs(30),
+                Duration::from_secs(60),
+                Duration::from_secs(120),
+                Duration::from_secs(300),
             ],
         }
     }
 }
 
 impl BackoffPolicy {
-    pub fn delay(&self, failures: u32) -> Duration {
-        if self.steps.is_empty() {
-            return Duration::from_secs(1);
+    pub fn from_steps(steps: impl IntoIterator<Item = Duration>) -> Self {
+        let mut steps: Vec<Duration> = steps.into_iter().collect();
+        if steps.is_empty() {
+            steps.push(Duration::from_secs(3));
         }
+        Self { steps }
+    }
+
+    pub fn delay(&self, failures: u32) -> Duration {
         let index = usize::try_from(failures)
             .unwrap_or(usize::MAX)
             .min(self.steps.len() - 1);

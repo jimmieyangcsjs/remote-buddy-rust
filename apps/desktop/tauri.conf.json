@@ -53,7 +53,9 @@
         "silent": true
       },
       "nsis": {
-        "installMode": "currentUser",
+        "installMode": "perMachine",
+        "startMenuFolder": "Remote Buddy",
+        "installerHooks": "../../scripts/nsis-hooks.nsh",
         "displayLanguageSelector": false
       }
     }

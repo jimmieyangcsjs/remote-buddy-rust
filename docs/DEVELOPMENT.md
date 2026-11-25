@@ -110,7 +110,8 @@ target\release\bundle\nsis\Remote Buddy_0.2.0_x64-setup.exe
 Tauri 配置使用：
 
 - NSIS 安装包；
-- 当前用户安装；
+- 计算机范围安装，默认 `C:\Program Files\Remote Buddy`；
+- 安装前清理旧版按用户安装；
 - WebView2 静默引导；
 - 自定义 CSP；
 - 本地资源协议；

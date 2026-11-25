@@ -197,8 +197,8 @@ impl AppState {
         let voice_gain = Arc::new(AtomicU32::new(initial_gain.to_bits()));
         let etw_status = Arc::new(StdRwLock::new(EtwStatus::default()));
 
-        let (supervisor, raw_input, hid_report, etw_listener) =
-            tauri::async_runtime::block_on(async {
+        let (supervisor, raw_input, hid_report, etw_listener) = tauri::async_runtime::block_on(
+            async {
                 let (frame_tx, frame_rx) = tokio::sync::mpsc::unbounded_channel();
                 let raw_input = spawn_raw_input_listener(frame_tx.clone()).ok();
                 let hid_logger = logger.clone();
@@ -220,7 +220,13 @@ impl AppState {
                     };
                 let etw_listener = match EtwInputListener::spawn(frame_tx, etw_status.clone()) {
                     Ok(listener) => {
-                        logger.info("BthPort ETW 按键采集已启动");
+                        if remote_buddy_windows::capture_profile::capture_profile_ready() {
+                            logger.info("BthPort ETW 按键采集已启动");
+                        } else {
+                            logger.warn(
+                                "按键增强未启用，BthPort ETW 全局会话保持关闭，避免影响其他蓝牙设备",
+                            );
+                        }
                         Some(listener)
                     }
                     Err(error) => {
@@ -250,7 +256,8 @@ impl AppState {
 
                 spawn_input_router(app.clone(), config.clone(), logger.clone(), frame_rx);
                 (supervisor, raw_input, hid_report, etw_listener)
-            });
+            },
+        );
 
         Self {
             config,
